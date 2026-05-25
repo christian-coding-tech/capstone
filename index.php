@@ -22,7 +22,7 @@
                 <h1 class="login-title">ACLC Fatima Campus</h1>
                 <p class="login-subtitle">A modern portal for campus navigation and student feedback.</p>
             </div>
-            <a href="admin.php" class="admin-link" aria-label="Admin login"><i class="fa-solid fa-circle-user"></i></a>
+            <a href="login.php" class="admin-link" aria-label="Admin login"><i class="fa-solid fa-circle-user"></i></a>
         </header>
 
         <main class="login-card">

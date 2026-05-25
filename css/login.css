@@ -334,8 +334,62 @@ body::before {
     }
 }
 
+/* Admin login form additions */
+.welcome-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    margin-top: 2px;
+    margin-bottom: 8px;
+    text-align: left;
+}
+
+.admin-login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.input-label {
+    font-size: 0.92rem;
+    color: #dce9ff;
+    opacity: 0.95;
+    margin-top: 6px;
+}
+
+.admin-input {
+    width: 100%;
+    padding: 14px 14px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(6, 16, 36, 0.55);
+    color: #eef6ff;
+    outline: none;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
+}
+
+.admin-input:focus {
+    border-color: rgba(78, 144, 255, 0.6);
+    box-shadow: 0 0 0 4px rgba(78, 144, 255, 0.18);
+}
+
+.forget-row {
+    margin-top: 6px;
+}
+
+.forget-link {
+    color: rgba(212, 243, 255, 0.92);
+    text-decoration: none;
+    font-size: 0.95rem;
+}
+
+.forget-link:hover {
+    text-decoration: underline;
+}
+
 /* prevent background scroll when modal is open */
 body.modal-open {
     overflow: hidden;
 }
+
 
