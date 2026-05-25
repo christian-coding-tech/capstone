@@ -8,8 +8,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/login.css">
+    <link rel="stylesheet" href="css/modal.css">
     <title>login</title>
 </head>
+
 <body>
     <div class="background-shape shape1"></div>
     <div class="background-shape shape2"></div>
@@ -34,13 +36,42 @@
                 </div>
 
                 <div class="login-container">
-                    <button class="login-btn nav-btn"><i class="fa-solid fa-location-dot"></i>Navigation</button>
-                    <button class="login-btn feedback-btn"><i class="fa-solid fa-clipboard-check"></i>Feedback</button>
+                    <button class="login-btn nav-btn" type="button"><i class="fa-solid fa-location-dot"></i>Navigation</button>
+                    <button class="login-btn feedback-btn" type="button"><i class="fa-solid fa-clipboard-check"></i>Feedback</button>
                 </div>
             </div>
         </main>
+
+        <!-- Navigation Popup Modal -->
+        <div class="modal-overlay" id="navigationModal" aria-hidden="true" role="dialog" aria-modal="true">
+            <div class="modal" role="document">
+                <div class="modal-header">
+                    <h2 class="modal-title">Navigation</h2>
+                    <button class="modal-close" type="button" aria-label="Close">&times;</button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="modal-3d-preview" aria-hidden="true">
+                        <img src="img/3d pic.png" alt="3D model preview" class="modal-model-preview">
+                        <div class="modal-3d-label">Ready 3D model</div>
+                    </div>
+
+                    <div class="modal-copy">
+                        <p>Select a destination to get started.</p>
+                        <div class="modal-actions">
+                            <button class="modal-action" type="button">Main Gate</button>
+                            <button class="modal-action" type="button">Library</button>
+                            <button class="modal-action" type="button">Registrar</button>
+                        </div>
+                        <p class="modal-hint">(Placeholder buttons—connect these to your navigation logic later.)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script src="js/login.js"></script>
 </body>
 </html>
+

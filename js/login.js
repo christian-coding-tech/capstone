@@ -1,4 +1,5 @@
 ﻿document.addEventListener('DOMContentLoaded', () => {
+    // Ripple effect for buttons
     const buttons = document.querySelectorAll('.login-btn');
 
     buttons.forEach(button => {
@@ -16,4 +17,43 @@
             window.setTimeout(() => ripple.remove(), 700);
         });
     });
+
+    // Navigation popup modal
+    const modalOverlay = document.getElementById('navigationModal');
+    const navBtn = document.querySelector('.nav-btn');
+    const modalClose = modalOverlay ? modalOverlay.querySelector('.modal-close') : null;
+
+    const openModal = () => {
+        if (!modalOverlay) return;
+        modalOverlay.classList.add('is-open');
+        modalOverlay.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('modal-open');
+    };
+
+    const closeModal = () => {
+        if (!modalOverlay) return;
+        modalOverlay.classList.remove('is-open');
+        modalOverlay.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('modal-open');
+    };
+
+    if (navBtn && modalOverlay) {
+        navBtn.addEventListener('click', () => openModal());
+    }
+
+    if (modalClose) {
+        modalClose.addEventListener('click', closeModal);
+    }
+
+    if (modalOverlay) {
+        modalOverlay.addEventListener('click', (e) => {
+            // Close only when clicking the overlay, not the modal content
+            if (e.target === modalOverlay) closeModal();
+        });
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeModal();
+    });
 });
+

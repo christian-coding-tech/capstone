@@ -333,3 +333,9 @@ body::before {
         font-size: 0.95rem;
     }
 }
+
+/* prevent background scroll when modal is open */
+body.modal-open {
+    overflow: hidden;
+}
+
