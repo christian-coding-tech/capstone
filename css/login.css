@@ -74,14 +74,15 @@ body::before {
     text-decoration: none;
     box-shadow: 0 22px 60px rgba(0,0,0,0.18);
     backdrop-filter: blur(12px);
-    transition: transform 0.3s ease, background 0.3s ease, color 0.3s ease;
+    transition: transform 0.3s ease, background 0.3s ease;
     animation: fadeIn 1s ease both;
+    cursor: pointer;
+    font-size: 1.5rem;
 }
 
 .admin-link:hover {
     transform: translateY(-3px) scale(1.02);
     background: rgba(255,255,255,0.18);
-    color: #ffffff;
 }
 
 .background-shape {
@@ -185,7 +186,6 @@ body::before {
     letter-spacing: 0.08em;
     text-transform: uppercase;
     backdrop-filter: blur(8px);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
 }
 
 .login-container {
@@ -207,7 +207,7 @@ body::before {
     background: linear-gradient(135deg, #4a90d9 0%, #1f73c3 100%);
     box-shadow: 0 18px 30px rgba(46, 105, 210, 0.28);
     cursor: pointer;
-    transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -217,27 +217,17 @@ body::before {
     animation: popIn 0.75s ease both;
 }
 
-.login-btn:nth-child(1) {
-    animation-delay: 0.4s;
-}
-
-.login-btn:nth-child(2) {
-    animation-delay: 0.55s;
-}
+.login-btn:nth-child(1) { animation-delay: 0.4s; }
+.login-btn:nth-child(2) { animation-delay: 0.55s; }
 
 .login-btn:hover {
     transform: translateY(-2px);
-    background: linear-gradient(135deg, #2f78d6 0%, #1a5bae 100%);
     box-shadow: 0 22px 34px rgba(31, 99, 209, 0.34);
 }
 
-.login-btn:active {
-    transform: translateY(1px);
-}
+.login-btn:active { transform: translateY(1px); }
 
-.login-btn i {
-    font-size: 1.1rem;
-}
+.login-btn i { font-size: 1.1rem; }
 
 .login-btn .ripple {
     position: absolute;
@@ -248,26 +238,237 @@ body::before {
     animation: ripple 0.6s ease-out;
 }
 
+/* ── Modals ── */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(5, 12, 28, 0.72);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.modal-box {
+    position: relative;
+    background: rgba(16, 28, 52, 0.97);
+    border: 1px solid rgba(255,255,255,0.13);
+    border-radius: 28px;
+    padding: 40px 36px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.4);
+    transform: translateY(24px) scale(0.97);
+    transition: transform 0.35s ease;
+}
+
+.modal-overlay.active .modal-box {
+    transform: translateY(0) scale(1);
+}
+
+.modal-close {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #aac4e8;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    transition: background 0.2s ease;
+}
+
+.modal-close:hover { background: rgba(255,255,255,0.15); }
+
+.modal-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #eef6ff;
+    margin-bottom: 6px;
+}
+
+.modal-subtitle {
+    font-size: 0.9rem;
+    color: #7da8d8;
+    margin-bottom: 28px;
+}
+
+.modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.form-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #aac4e8;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 12px;
+    padding: 12px 16px;
+    color: #eef6ff;
+    font-size: 0.95rem;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    transition: border-color 0.25s ease, background 0.25s ease;
+    width: 100%;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    border-color: rgba(78, 144, 255, 0.6);
+    background: rgba(78, 144, 255, 0.08);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: rgba(255,255,255,0.28);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-group select option {
+    background: #141f34;
+    color: #eef6ff;
+}
+
+.optional {
+    font-weight: 400;
+    color: #4a6a8a;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.password-wrap {
+    position: relative;
+}
+
+.password-wrap input {
+    padding-right: 48px;
+}
+
+.toggle-pw {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #5a82a8;
+    cursor: pointer;
+    font-size: 0.95rem;
+    padding: 4px;
+    transition: color 0.2s ease;
+}
+
+.toggle-pw:hover { color: #aac4e8; }
+
+.submit-btn {
+    margin-top: 6px;
+    padding: 14px 24px;
+    background: linear-gradient(135deg, #4a90d9 0%, #1f73c3 100%);
+    border: none;
+    border-radius: 14px;
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 12px 28px rgba(31, 99, 209, 0.32);
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 36px rgba(31, 99, 209, 0.42);
+}
+
+.submit-btn:active { transform: translateY(1px); }
+
+.submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.modal-error {
+    background: rgba(220, 60, 60, 0.15);
+    border: 1px solid rgba(220, 60, 60, 0.35);
+    border-radius: 10px;
+    color: #f4a0a0;
+    font-size: 0.88rem;
+    padding: 10px 14px;
+    margin-bottom: 4px;
+    display: none;
+}
+
+.modal-error.visible { display: block; }
+
+.modal-success {
+    background: rgba(40, 180, 120, 0.15);
+    border: 1px solid rgba(40, 180, 120, 0.35);
+    border-radius: 10px;
+    color: #80e8bb;
+    font-size: 0.88rem;
+    padding: 10px 14px;
+    margin-bottom: 4px;
+    display: none;
+}
+
+.modal-success.visible { display: block; }
+
+/* ── Animations ── */
 @keyframes fadeInDown {
-    from {
-        opacity: 0;
-        transform: translateY(-24px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(-24px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(28px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(28px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 @keyframes float {
@@ -276,60 +477,28 @@ body::before {
 }
 
 @keyframes popIn {
-    from {
-        opacity: 0;
-        transform: translateY(18px) scale(0.98);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
+    from { opacity: 0; transform: translateY(18px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 @keyframes ripple {
-    to {
-        transform: scale(4);
-        opacity: 0;
-    }
+    to { transform: scale(4); opacity: 0; }
 }
 
+/* ── Responsive ── */
 @media (max-width: 980px) {
     .content-wrapper {
         flex-direction: column;
         min-height: auto;
     }
-
-    .login-image,
-    .login-container {
-        width: 100%;
-    }
-
-    .login-card {
-        padding: 28px 24px;
-    }
+    .login-image, .login-container { width: 100%; }
+    .login-card { padding: 28px 24px; }
 }
 
 @media (max-width: 640px) {
-    .page-shell {
-        padding: 18px 16px 32px;
-    }
-
-    .page-header {
-        align-items: flex-start;
-    }
-
-    .admin-link {
-        top: 12px;
-        right: 12px;
-        width: 56px;
-        height: 56px;
-    }
-
-    .login-title {
-        font-size: 2.2rem;
-    }
-
-    .login-subtitle {
-        font-size: 0.95rem;
-    }
+    .page-shell { padding: 18px 16px 32px; }
+    .admin-link { top: 12px; right: 12px; width: 56px; height: 56px; }
+    .login-title { font-size: 2.2rem; }
+    .login-subtitle { font-size: 0.95rem; }
+    .modal-box { padding: 32px 24px; }
 }
