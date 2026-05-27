@@ -8,8 +8,8 @@ UPDATE users SET status = 'active' WHERE status IS NULL;
 /// adi ig copy /////
 
 
-
-
+CREATE DATABASE aclc_campus;
+USE aclc_campus;
 
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
