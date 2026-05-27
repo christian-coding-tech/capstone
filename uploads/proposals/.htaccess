@@ -1,0 +1,14 @@
+# Prevent directory browsing
+Options -Indexes
+
+# Only allow PDF files to be accessed directly
+<FilesMatch "\.pdf$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
+
+# Block everything else
+<FilesMatch "^(?!.*\.pdf$)">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>

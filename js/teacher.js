@@ -43,6 +43,12 @@ document.addEventListener('DOMContentLoaded', () => {
         return d.toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
     }
 
+    function formatDateTime(s) {
+        if (!s) return '—';
+        const d = new Date(s);
+        return d.toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+
     function formatTime(timeStr) {
         if (!timeStr) return '—';
         const [h, m] = timeStr.split(':');
@@ -73,6 +79,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch {}
     }
 
+    // ── Reservation cache ──
+    let reservationCache = {};
+
     // ── Load Reservations ──
     async function loadReservations() {
         tabContent.innerHTML = `
@@ -100,6 +109,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            reservationCache = {};
+            data.data.forEach(r => { reservationCache[r.id] = r; });
             tabContent.innerHTML = data.data.map(r => buildCard(r)).join('');
 
         } catch {
@@ -112,9 +123,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const pillClass = { pending: 'pill-pending', approved: 'pill-approved', rejected: 'pill-rejected' }[r.status];
         const pillLabel = { pending: 'Pending', approved: 'Approved', rejected: 'Rejected' }[r.status];
 
-        let actionsHtml = '';
         if (r.status === 'approved') {
-            actionsHtml = `<div class="card-actions"><button class="action-btn" onclick="openPrint(${JSON.stringify(r).replace(/"/g, '&quot;')})"><i class="fa-solid fa-print"></i> View / Print</button></div>`;
+            const safeId = r.id;
+            actionsHtml = `<div class="card-actions"><button class="action-btn" onclick="openPrintById(${safeId})"><i class="fa-solid fa-print"></i> View / Print</button></div>`;
         }
 
         let rejectionHtml = '';
@@ -282,8 +293,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    window.openPrintById = function(id) {
+        const r = reservationCache[id];
+        if (r) window.openPrint(r);
+    };
+
     // ── Print Modal ──
     window.openPrint = function(r) {
+        const approvedByHtml = r.approved_by_name
+            ? `<div class="print-row"><span>Approved By</span><span>${r.approved_by_name}</span></div>
+            <div class="print-row"><span>Approved On</span><span>${formatDateTime ? formatDateTime(r.approved_at) : r.approved_at}</span></div>`
+            : '';
         printContent.innerHTML = `
             <div class="print-content-box">
                 <h2>Venue Reservation — Approval Slip</h2>
@@ -293,6 +313,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="print-row"><span>Date of Use</span><span>${formatDate(r.date_of_use)}</span></div>
                 <div class="print-row"><span>Time</span><span>${formatTime(r.time_start)} — ${formatTime(r.time_end)}</span></div>
                 <div class="print-row"><span>Submitted</span><span>${formatDate(r.created_at.split(' ')[0])}</span></div>
+                ${approvedByHtml}
                 <div class="print-approved-badge"><i class="fa-solid fa-circle-check"></i> Approved</div>
             </div>`;
         openModal(printModal);

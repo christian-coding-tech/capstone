@@ -1,1 +1,5 @@
 # capstone
+
+@KABET
+
+BASAHA ANAY BEFORE KA MAGCOPY PASTE HAN SQL!!!!!
