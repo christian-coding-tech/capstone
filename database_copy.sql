@@ -85,6 +85,15 @@ CREATE TABLE password_resets (
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
+CREATE TABLE admin_seen (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    admin_id INT NOT NULL,
+    tab_name VARCHAR(50) NOT NULL,
+    last_seen DATETIME NOT NULL,
+    FOREIGN KEY (admin_id) REFERENCES users(id),
+    UNIQUE KEY unique_admin_tab (admin_id, tab_name)
+);
+
 INSERT INTO venues (name) VALUES
 ('Basketball Court'),
 ('Library'),

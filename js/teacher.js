@@ -64,10 +64,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const res  = await fetch('auth/get_badge_counts.php');
             const data = await res.json();
             if (!data.success) return;
-
             const counts = data.counts;
             ['pending', 'approved', 'rejected'].forEach(status => {
                 const badge = document.getElementById(`badge-${status}`);
+                if (!badge) return;
                 if (counts[status] > 0) {
                     badge.textContent = counts[status];
                     badge.classList.add('visible');
@@ -96,7 +96,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const res  = await fetch(url);
-            const data = await res.json();
+            const text = await res.text();
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch {
+                tabContent.innerHTML = `<div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i><span>Server error: ${text.substring(0, 100)}</span></div>`;
+                return;
+            }
 
             if (!data.success) {
                 tabContent.innerHTML = `<div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i><span>Failed to load requests.</span></div>`;
@@ -113,8 +120,8 @@ document.addEventListener('DOMContentLoaded', () => {
             data.data.forEach(r => { reservationCache[r.id] = r; });
             tabContent.innerHTML = data.data.map(r => buildCard(r)).join('');
 
-        } catch {
-            tabContent.innerHTML = `<div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i><span>Something went wrong.</span></div>`;
+        } catch (err) {
+            tabContent.innerHTML = `<div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i><span>Something went wrong: ${err.message}</span></div>`;
         }
     }
 
@@ -123,9 +130,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const pillClass = { pending: 'pill-pending', approved: 'pill-approved', rejected: 'pill-rejected' }[r.status];
         const pillLabel = { pending: 'Pending', approved: 'Approved', rejected: 'Rejected' }[r.status];
 
+        let actionsHtml = '';
         if (r.status === 'approved') {
-            const safeId = r.id;
-            actionsHtml = `<div class="card-actions"><button class="action-btn" onclick="openPrintById(${safeId})"><i class="fa-solid fa-print"></i> View / Print</button></div>`;
+            actionsHtml = `<div class="card-actions"><button class="action-btn" onclick="openPrintById(${r.id})"><i class="fa-solid fa-print"></i> View / Print</button></div>`;
         }
 
         let rejectionHtml = '';
@@ -137,6 +144,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>`;
         }
 
+        let approvedByHtml = '';
+        if (r.status === 'approved' && r.approved_by_name) {
+            approvedByHtml = `<span><i class="fa-solid fa-circle-check"></i> Approved by ${r.approved_by_name}</span>`;
+        }
+
         return `
             <div class="request-card">
                 <div class="card-left">
@@ -145,7 +157,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="card-meta">
                         <span><i class="fa-solid fa-calendar"></i> ${formatDate(r.date_of_use)}</span>
                         <span><i class="fa-solid fa-clock"></i> ${formatTime(r.time_start)} — ${formatTime(r.time_end)}</span>
-                        <span><i class="fa-solid fa-file-circle-check"></i> Submitted ${formatDate(r.created_at.split(' ')[0])}</span>
+                        <span><i class="fa-solid fa-paper-plane"></i> Submitted ${formatDateTime(r.created_at)}</span>
+                        ${approvedByHtml}
                     </div>
                     ${rejectionHtml}
                 </div>
@@ -163,15 +176,12 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.classList.add('active');
             activeTab = btn.dataset.tab;
 
-            // Mark as read
             const fd = new FormData();
             fd.append('status', activeTab);
             await fetch('auth/mark_read.php', { method: 'POST', body: fd });
 
-            // Clear badge
             const badge = document.getElementById(`badge-${activeTab}`);
-            badge.textContent = '';
-            badge.classList.remove('visible');
+            if (badge) { badge.textContent = ''; badge.classList.remove('visible'); }
 
             loadReservations();
         });
@@ -203,6 +213,13 @@ document.addEventListener('DOMContentLoaded', () => {
         reservSuccess.classList.remove('visible');
         openModal(reservModal);
     });
+
+    reservClose.addEventListener('click', () => {
+        closeModal(reservModal);
+        reservError.classList.remove('visible');
+        reservSuccess.classList.remove('visible');
+    });
+
     reservModal.addEventListener('click', e => {
         if (e.target === reservModal) {
             closeModal(reservModal);
@@ -211,7 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // ── Load Venues into dropdown ──
+    // ── Load Venues ──
     async function loadVenues() {
         try {
             const res  = await fetch('auth/get_venues.php');
@@ -224,7 +241,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 venueSelect.appendChild(opt);
             });
 
-            // ── Conditional Room Field — runs after venues are loaded ──
             venueSelect.addEventListener('change', () => {
                 const selectedText = venueSelect.options[venueSelect.selectedIndex].text.toLowerCase();
                 const roomWrap     = document.getElementById('roomFieldWrap');
@@ -241,7 +257,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch {}
     }
-
 
     // ── File Upload Label ──
     fileInput.addEventListener('change', () => {
@@ -266,7 +281,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const res  = await fetch('auth/reservation_handler.php', { method: 'POST', body: formData });
-            const data = await res.json();
+            const text = await res.text();
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch {
+                reservError.textContent = 'Server error: ' + text.substring(0, 200);
+                reservError.classList.add('visible');
+                reservSubmit.disabled = false;
+                reservSubmit.querySelector('span').textContent = 'Submit Request';
+                return;
+            }
 
             if (data.success) {
                 reservSuccess.textContent = 'Request submitted successfully!';
@@ -274,18 +299,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 reservForm.reset();
                 fileLabel.textContent = 'Click to upload or drag & drop';
                 fileWrap.classList.remove('has-file');
-                loadReservations();
+                document.getElementById('roomFieldWrap').style.display = 'none';
+                document.getElementById('roomNumber').required = false;
+                await loadReservations();
                 loadBadges();
                 setTimeout(() => {
                     closeModal(reservModal);
                     reservSuccess.classList.remove('visible');
                 }, 2000);
             } else {
-                reservError.textContent = data.message;
+                reservError.textContent = data.message || 'Something went wrong.';
                 reservError.classList.add('visible');
             }
-        } catch {
-            reservError.textContent = 'Something went wrong. Please try again.';
+        } catch (err) {
+            reservError.textContent = 'Something went wrong: ' + err.message;
             reservError.classList.add('visible');
         } finally {
             reservSubmit.disabled = false;
@@ -293,16 +320,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // ── Print Modal ──
     window.openPrintById = function(id) {
         const r = reservationCache[id];
-        if (r) window.openPrint(r);
+        if (!r) { alert('Could not load reservation details.'); return; }
+        window.openPrint(r);
     };
 
-    // ── Print Modal ──
     window.openPrint = function(r) {
         const approvedByHtml = r.approved_by_name
             ? `<div class="print-row"><span>Approved By</span><span>${r.approved_by_name}</span></div>
-            <div class="print-row"><span>Approved On</span><span>${formatDateTime ? formatDateTime(r.approved_at) : r.approved_at}</span></div>`
+               <div class="print-row"><span>Approved On</span><span>${formatDateTime(r.approved_at)}</span></div>`
             : '';
         printContent.innerHTML = `
             <div class="print-content-box">
@@ -312,7 +340,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="print-row"><span>Event</span><span>${r.event_name}</span></div>
                 <div class="print-row"><span>Date of Use</span><span>${formatDate(r.date_of_use)}</span></div>
                 <div class="print-row"><span>Time</span><span>${formatTime(r.time_start)} — ${formatTime(r.time_end)}</span></div>
-                <div class="print-row"><span>Submitted</span><span>${formatDate(r.created_at.split(' ')[0])}</span></div>
+                <div class="print-row"><span>Submitted</span><span>${formatDateTime(r.created_at)}</span></div>
                 ${approvedByHtml}
                 <div class="print-approved-badge"><i class="fa-solid fa-circle-check"></i> Approved</div>
             </div>`;
@@ -322,45 +350,39 @@ document.addEventListener('DOMContentLoaded', () => {
     printClose.addEventListener('click', () => closeModal(printModal));
     printModal.addEventListener('click', e => { if (e.target === printModal) closeModal(printModal); });
 
-// ── Chatbot ──
-chatbotToggle.addEventListener('click', () => chatbotPanel.classList.toggle('active'));
-chatbotClose.addEventListener('click',  () => chatbotPanel.classList.remove('active'));
+    // ── Chatbot ──
+    chatbotToggle.addEventListener('click', () => chatbotPanel.classList.toggle('active'));
+    chatbotClose.addEventListener('click',  () => chatbotPanel.classList.remove('active'));
 
-// ── Draggable Chatbot ──
-const chatHeader = document.querySelector('.chatbot-header');
-let isDragging = false;
-let dragOffsetX = 0;
-let dragOffsetY = 0;
+    const chatHeader = document.querySelector('.chatbot-header');
+    let isDragging = false;
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
 
-chatHeader.style.cursor = 'grab';
-
-chatHeader.addEventListener('mousedown', e => {
-    isDragging  = true;
-    dragOffsetX = e.clientX - chatbotPanel.getBoundingClientRect().left;
-    dragOffsetY = e.clientY - chatbotPanel.getBoundingClientRect().top;
-    chatHeader.style.cursor = 'grabbing';
-    e.preventDefault();
-});
-
-document.addEventListener('mousemove', e => {
-    if (!isDragging) return;
-    const x = e.clientX - dragOffsetX;
-    const y = e.clientY - dragOffsetY;
-
-    // Keep panel within viewport bounds
-    const maxX = window.innerWidth  - chatbotPanel.offsetWidth;
-    const maxY = window.innerHeight - chatbotPanel.offsetHeight;
-
-    chatbotPanel.style.right  = 'auto';
-    chatbotPanel.style.bottom = 'auto';
-    chatbotPanel.style.left   = `${Math.max(0, Math.min(x, maxX))}px`;
-    chatbotPanel.style.top    = `${Math.max(0, Math.min(y, maxY))}px`;
-});
-
-document.addEventListener('mouseup', () => {
-    isDragging = false;
     chatHeader.style.cursor = 'grab';
-});
+
+    chatHeader.addEventListener('mousedown', e => {
+        isDragging  = true;
+        dragOffsetX = e.clientX - chatbotPanel.getBoundingClientRect().left;
+        dragOffsetY = e.clientY - chatbotPanel.getBoundingClientRect().top;
+        chatHeader.style.cursor = 'grabbing';
+        e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', e => {
+        if (!isDragging) return;
+        const x = Math.max(0, Math.min(e.clientX - dragOffsetX, window.innerWidth  - chatbotPanel.offsetWidth));
+        const y = Math.max(0, Math.min(e.clientY - dragOffsetY, window.innerHeight - chatbotPanel.offsetHeight));
+        chatbotPanel.style.right  = 'auto';
+        chatbotPanel.style.bottom = 'auto';
+        chatbotPanel.style.left   = `${x}px`;
+        chatbotPanel.style.top    = `${y}px`;
+    });
+
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+        chatHeader.style.cursor = 'grab';
+    });
 
     function appendMsg(text, sender) {
         const div = document.createElement('div');
@@ -368,6 +390,7 @@ document.addEventListener('mouseup', () => {
         div.innerHTML = `<div class="chat-bubble">${text}</div>`;
         chatbotMsgs.appendChild(div);
         chatbotMsgs.scrollTop = chatbotMsgs.scrollHeight;
+        return div;
     }
 
     async function sendChatMessage() {
@@ -376,11 +399,19 @@ document.addEventListener('mouseup', () => {
         chatbotInput.value = '';
         appendMsg(text, 'user');
 
-        // Placeholder response — replace with API call when you have your key
-        appendMsg('<i class="fa-solid fa-spinner fa-spin"></i>', 'bot');
-        await new Promise(r => setTimeout(r, 800));
-        chatbotMsgs.lastElementChild.querySelector('.chat-bubble').innerHTML =
-            "I'm your Campus Assistant! Full AI responses will be available soon. For now, you can use the + button to make a reservation, or check your request status in the tabs above.";
+        const loadingMsg = appendMsg('<i class="fa-solid fa-spinner fa-spin"></i>', 'bot');
+
+        try {
+            const fd = new FormData();
+            fd.append('message', text);
+            const res  = await fetch('auth/chatbot_handler.php', { method: 'POST', body: fd });
+            const data = await res.json();
+            loadingMsg.querySelector('.chat-bubble').innerHTML = data.success
+                ? data.reply
+                : "Sorry, I couldn't process that. Please try again.";
+        } catch {
+            loadingMsg.querySelector('.chat-bubble').innerHTML = "Something went wrong. Please try again.";
+        }
     }
 
     chatbotSend.addEventListener('click', sendChatMessage);

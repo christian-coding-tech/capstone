@@ -132,19 +132,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const noFilterTabs = ['schedule', 'teachers', 'students'];
 
     tabBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            tabBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            activeTab = btn.dataset.tab;
-            dateFilterWrap.style.display = noFilterTabs.includes(activeTab) ? 'none' : 'flex';
+            btn.addEventListener('click', async () => {
+                tabBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                activeTab = btn.dataset.tab;
+                dateFilterWrap.style.display = noFilterTabs.includes(activeTab) ? 'none' : 'flex';
 
-            // Clear badge on click
-            const badge = document.getElementById(`badge-${activeTab}`);
-            if (badge) { badge.textContent = ''; badge.classList.remove('visible'); }
+                // Clear badge on click
+                const badge = document.getElementById(`badge-${activeTab}`);
+                if (badge) { badge.textContent = ''; badge.classList.remove('visible'); }
 
-            loadContent();
+                // Mark tab as seen on server
+                const trackableTabs = ['pending', 'approved', 'rejected', 'feedback'];
+                if (trackableTabs.includes(activeTab)) {
+                    const fd = new FormData();
+                    fd.append('tab', activeTab);
+                    await fetch('auth/mark_admin_seen.php', { method: 'POST', body: fd });
+                }
+
+                loadContent();
+            });
         });
-    });
 
     // ── Date Filter ──
     applyFilter.addEventListener('click', () => {
@@ -953,6 +961,11 @@ document.addEventListener('DOMContentLoaded', () => {
     chatbotInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendChatMessage(); });
 
     // ── Init ──
+    // Mark the default active tab (pending) as seen on page load
+    const initFd = new FormData();
+    initFd.append('tab', 'pending');
+    fetch('auth/mark_admin_seen.php', { method: 'POST', body: initFd });
+
     loadBadges();
     loadContent();
 });
