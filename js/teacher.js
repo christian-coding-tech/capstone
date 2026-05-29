@@ -400,17 +400,31 @@ document.addEventListener('DOMContentLoaded', () => {
         appendMsg(text, 'user');
 
         const loadingMsg = appendMsg('<i class="fa-solid fa-spinner fa-spin"></i>', 'bot');
+        chatbotInput.disabled = true;
+        chatbotSend.disabled = true;
 
         try {
             const fd = new FormData();
             fd.append('message', text);
             const res  = await fetch('auth/chatbot_handler.php', { method: 'POST', body: fd });
-            const data = await res.json();
-            loadingMsg.querySelector('.chat-bubble').innerHTML = data.success
-                ? data.reply
-                : "Sorry, I couldn't process that. Please try again.";
-        } catch {
-            loadingMsg.querySelector('.chat-bubble').innerHTML = "Something went wrong. Please try again.";
+            let data = null;
+            try { data = await res.json(); } catch(e) { /* ignore */ }
+
+            if (res.status === 401 || (data && data.success === false && data.message === 'Unauthorized.')) {
+                loadingMsg.querySelector('.chat-bubble').innerHTML = 'Please sign in to use the Campus Assistant.';
+            } else if (data && data.success) {
+                loadingMsg.querySelector('.chat-bubble').innerHTML = data.reply;
+            } else if (data && data.message) {
+                loadingMsg.querySelector('.chat-bubble').innerHTML = data.message;
+            } else {
+                loadingMsg.querySelector('.chat-bubble').innerHTML = 'Sorry, I could not process that. Please try again.';
+            }
+        } catch (err) {
+            loadingMsg.querySelector('.chat-bubble').innerHTML = 'Something went wrong. Please try again.';
+        } finally {
+            chatbotInput.disabled = false;
+            chatbotSend.disabled = false;
+            chatbotInput.focus();
         }
     }
 

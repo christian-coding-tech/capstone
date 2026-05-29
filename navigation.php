@@ -48,10 +48,9 @@
                 <i class="fa-solid fa-minus"></i>
             </button>
         </div>
-        <div class="nav-chatbot-messages" id="navChatbotMessages">
-            <!-- filled by JS -->
-        </div>
-        <div class="nav-chatbot-input-wrap" id="navChatbotInputWrap">
+        <div class="nav-chatbot-messages" id="navChatbotMessages"></div>
+        <div class="nav-quick-replies" id="navQuickReplies"></div>
+        <div class="nav-chatbot-input-wrap">
             <input type="text" id="navChatbotInput" placeholder="Type your answer...">
             <button class="nav-chatbot-send" id="navChatbotSend">
                 <i class="fa-solid fa-paper-plane"></i>

@@ -5,7 +5,7 @@
     // ── Renderer ──
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.outputEncoding = THREE.sRGBEncoding;
+    renderer.outputEncoding = THREE.sRGBEncoding || 3001;    
     renderer.shadowMap.enabled = true;
 
     // ── Scene ──
@@ -13,7 +13,8 @@
 
     // ── Camera ──
     const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
-    camera.position.set(0, 2, 6);
+    camera.position.set(0, 2.1, 5.1);
+    camera.lookAt(0, 0.1, 0);
 
     // ── Lights ──
     const ambient = new THREE.AmbientLight(0xffffff, 0.6);
@@ -29,24 +30,29 @@
 
     // ── Load GLB ──
     const loader = new THREE.GLTFLoader();
-    let model = null;
+    loader.crossOrigin = 'anonymous';
+
+    const modelGroup = new THREE.Group();
+    scene.add(modelGroup);
 
     loader.load(
-        'ACLC2.glb',
+        'ACLC3.glb',
         function(gltf) {
             model = gltf.scene;
 
-            // Center the model
+            // Center the model inside the group
             const box    = new THREE.Box3().setFromObject(model);
             const center = box.getCenter(new THREE.Vector3());
             const size   = box.getSize(new THREE.Vector3());
             const maxDim = Math.max(size.x, size.y, size.z);
-            const scale  = 3.5 / maxDim;
+            const scale  = 30 / maxDim;
 
             model.position.sub(center);
             model.scale.setScalar(scale);
 
-            scene.add(model);
+            modelGroup.add(model);
+            modelGroup.position.y = -16.5;
+            modelGroup.position.x = 4.5;
 
             // Hide label once loaded
             const label = document.querySelector('.model-label');

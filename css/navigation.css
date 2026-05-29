@@ -299,6 +299,32 @@ body {
 
 .nav-chatbot-tab:hover { transform: translateY(-2px); }
 
+.nav-quick-replies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    padding: 0 14px 10px;
+    flex-shrink: 0;
+}
+
+.nav-quick-reply-btn {
+    padding: 6px 13px;
+    border-radius: 999px;
+    border: 1px solid rgba(74,144,217,0.4);
+    background: rgba(74,144,217,0.1);
+    color: #7dc4f5;
+    font-size: 0.8rem;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    white-space: nowrap;
+}
+
+.nav-quick-reply-btn:hover {
+    background: rgba(74,144,217,0.25);
+    color: #eef6ff;
+}
+
 /* ── Typing indicator ── */
 .typing-indicator {
     display: flex;
