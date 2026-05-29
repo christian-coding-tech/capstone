@@ -772,3 +772,53 @@ body::before {
         height: 55vh;
     }
 }
+
+/* Rotate toggle button on model frame */
+.model-rotate-toggle {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 40;
+    padding: 8px 10px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #eef6ff;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 0.95rem;
+}
+.model-rotate-toggle.off {
+    background: rgba(255,255,255,0.02);
+    color: #9aa8bf;
+}
+.model-rotate-toggle i { font-size: 1.05rem; }
+
+/* Zoom controls */
+.model-zoom-controls {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.04);
+    padding: 8px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.06);
+}
+.model-zoom-controls .zoom-btn {
+    background: transparent;
+    border: none;
+    color: #eef6ff;
+    padding: 6px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.model-zoom-controls .zoom-btn:hover { background: rgba(255,255,255,0.06); }
+.model-zoom-controls .zoom-slider { width: 120px; }
+.model-zoom-controls .zoom-slider::-webkit-slider-thumb { appearance: none; width: 12px; height: 12px; border-radius: 50%; background: #fff; }
