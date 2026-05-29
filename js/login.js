@@ -126,4 +126,15 @@
             feedbackError.classList.add('visible');
         }
     });
+
+    chatbotSend.addEventListener('click', sendChatMessage);
+    chatbotInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendChatMessage(); });
+
+    // ── Navigation button ──
+    const navBtn = document.getElementById('navBtn');
+    if (navBtn) {
+        navBtn.addEventListener('click', () => {
+            window.location.href = 'navigation.php';
+        });
+    }
 });

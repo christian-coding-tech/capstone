@@ -32,13 +32,13 @@
                 <div class="login-image">
                     <div class="model-frame">
                         <div class="model-glow"></div>
-                        <img src="img/3d pic.png" alt="3D model preview" class="model-preview">
+                        <canvas id="threeCanvas" class="model-preview" style="width:100%;height:100%;border-radius:26px;"></canvas>
                         <div class="model-label">3D model ready</div>
                     </div>
                 </div>
 
                 <div class="login-container">
-                    <button class="login-btn nav-btn"><i class="fa-solid fa-location-dot"></i>Navigation</button>
+                    <button class="login-btn nav-btn" id="navBtn"><i class="fa-solid fa-location-dot"></i>Navigation</button>
                     <button class="login-btn feedback-btn" id="feedbackToggle"><i class="fa-solid fa-clipboard-check"></i>Feedback</button>
                 </div>
             </div>
@@ -129,6 +129,9 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="js/model_viewer.js"></script>
     <script src="js/login.js"></script>
 </body>
 </html>
