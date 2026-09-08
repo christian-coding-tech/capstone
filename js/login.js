@@ -82,6 +82,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const feedbackSuccess = document.getElementById('feedbackSuccess');
     const feedbackError   = document.getElementById('feedbackError');
 
+    const overviewFeedback = document.getElementById('overviewFeedback');
+    if (overviewFeedback) overviewFeedback.addEventListener('click', () => openModal(feedbackModal));
+
     feedbackToggle.addEventListener('click', () => openModal(feedbackModal));
 
     feedbackClose.addEventListener('click', () => {
@@ -242,7 +245,11 @@ document.addEventListener('DOMContentLoaded', () => {
         navState = { step: 'location', currentLocation: null, floor: null, destination: null };
     }
 
-    navBtn.addEventListener('click', enterNavMode);
+    navBtn.addEventListener('click', () => {
+        navBtn.classList.add('is-loading');
+        navBtn.querySelector('i').className = 'fa-solid fa-spinner fa-spin';
+        window.location.href = 'navigation.php';
+    });
     navCloseBtn.addEventListener('click', exitNavMode);
     navBlur.addEventListener('click', exitNavMode);
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && navActive) exitNavMode(); });

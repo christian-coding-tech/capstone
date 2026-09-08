@@ -32,23 +32,67 @@
         <main class="login-card">
             <div class="content-wrapper">
                 <div class="login-image" id="modelContainer">
+                    <div class="model-eyebrow"><i class="fa-solid fa-cube"></i> Explore the campus</div>
                     <div class="model-frame" id="modelFrame">
                         <div class="model-glow"></div>
                         <canvas id="threeCanvas" class="model-preview"></canvas>
+                        <div class="model-loading" id="modelLoading"><span></span> Loading campus model</div>
                         <div class="model-label" id="modelLabel">ACLC Fatima Campus</div>
+                    </div>
+                    <div class="model-caption">
+                        <strong>ACLC Fatima Campus</strong>
+                        <span>Interactive campus preview</span>
                     </div>
                 </div>
 
                 <div class="login-container">
-                    <button class="login-btn nav-btn" id="navBtn">
+                    <p class="login-kicker">Campus portal</p>
+                    <h2 class="login-heading">Find your way around campus.</h2>
+                    <p class="login-copy">Get guided directions, explore key facilities, and share feedback with the campus team.</p>
+                    <a href="navigation.php" class="login-btn nav-btn" id="navBtn">
                         <i class="fa-solid fa-location-dot"></i>Navigation
-                    </button>
+                    </a>
                     <button class="login-btn feedback-btn" id="feedbackToggle">
                         <i class="fa-solid fa-clipboard-check"></i>Feedback
                     </button>
+                    <div class="login-trust"><i class="fa-solid fa-shield-halved"></i><span>Built for ACLC Fatima Campus students and staff</span></div>
                 </div>
             </div>
         </main>
+
+        <section class="campus-overview" aria-labelledby="campusOverviewTitle">
+            <div class="overview-heading">
+                <div>
+                    <p class="login-kicker">Your campus, at a glance</p>
+                    <h2 id="campusOverviewTitle">Everything you need to get started</h2>
+                </div>
+                <span class="overview-status"><i class="fa-solid fa-circle"></i> Portal online</span>
+            </div>
+            <div class="overview-grid">
+                <a class="overview-card" href="navigation.php">
+                    <span class="overview-icon overview-blue"><i class="fa-solid fa-location-dot"></i></span>
+                    <span><strong>Campus navigation</strong><small>Find buildings, rooms, facilities, and landmarks.</small></span>
+                    <i class="fa-solid fa-arrow-up-right-from-square overview-arrow"></i>
+                </a>
+                <a class="overview-card" href="navigation.php">
+                    <span class="overview-icon overview-green"><i class="fa-solid fa-compass"></i></span>
+                    <span><strong>Explore key areas</strong><small>Preview the Main Building, Library, Court, and Cafeteria.</small></span>
+                    <i class="fa-solid fa-arrow-up-right-from-square overview-arrow"></i>
+                </a>
+                <button class="overview-card" type="button" id="overviewFeedback">
+                    <span class="overview-icon overview-amber"><i class="fa-solid fa-message"></i></span>
+                    <span><strong>Share feedback</strong><small>Help improve the campus experience for everyone.</small></span>
+                    <i class="fa-solid fa-arrow-right overview-arrow"></i>
+                </button>
+            </div>
+            <div class="overview-facts" aria-label="Campus facts">
+                <span><i class="fa-solid fa-building"></i> Main Building</span>
+                <span><i class="fa-solid fa-book-open"></i> Library</span>
+                <span><i class="fa-solid fa-laptop"></i> Computer Labs</span>
+                <span><i class="fa-solid fa-basketball"></i> Activity Court</span>
+                <span><i class="fa-solid fa-utensils"></i> Cafeteria</span>
+            </div>
+        </section>
     </div>
 
     <!-- Navigation exit button -->

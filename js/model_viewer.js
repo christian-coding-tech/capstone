@@ -4,29 +4,40 @@
 
     // ── Renderer ──
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.outputEncoding = THREE.sRGBEncoding || 3001;    
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputEncoding = THREE.sRGBEncoding || 3001;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.05;
     renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
     // ── Scene ──
     const scene = new THREE.Scene();
 
     // ── Camera ──
     const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
-    camera.position.set(0, 2.1, 5.1);
-    camera.lookAt(0, 0.1, 0);
+    camera.position.set(0, 0.8, 7.2);
+    camera.lookAt(0, 0, 0);
 
     // ── Lights ──
-    const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+    const ambient = new THREE.HemisphereLight(0xdff4ff, 0x203a56, 1.15);
     scene.add(ambient);
 
-    const dirLight = new THREE.DirectionalLight(0x7dc4f5, 1.2);
-    dirLight.position.set(5, 10, 7);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 2.2);
+    dirLight.position.set(5, 10, 8);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.set(1024, 1024);
+    dirLight.shadow.camera.near = 0.1;
+    dirLight.shadow.camera.far = 40;
     scene.add(dirLight);
 
-    const fillLight = new THREE.DirectionalLight(0x4a90d9, 0.4);
-    fillLight.position.set(-5, 2, -5);
+    const fillLight = new THREE.DirectionalLight(0x74c7ff, 0.75);
+    fillLight.position.set(-7, 4, -6);
     scene.add(fillLight);
+
+    const rimLight = new THREE.DirectionalLight(0x8ee8d0, 0.8);
+    rimLight.position.set(3, 5, -8);
+    scene.add(rimLight);
 
     // ── Load GLB ──
     const loader = new THREE.GLTFLoader();
@@ -45,6 +56,7 @@
     let targetScale = 1;
     let currentScale = 1;
     let baseScale = 1;
+    let defaultCameraZ = camera.position.z;
 
     // Rotation toggle
     let rotationEnabled = true;
@@ -77,8 +89,8 @@
     let cameraZ = camera.position.z;
     let targetCameraZ = cameraZ;
     // Allow closer zoom by reducing minCameraZ
-    const minCameraZ = -20;
-    const maxCameraZ = 20;
+    const minCameraZ = 2.8;
+    const maxCameraZ = 14;
 
     (function createZoomControls(){
         const frameEl = canvas.closest('.model-frame') || document.getElementById('modelFrame') || document.body;
@@ -125,6 +137,20 @@
             slider.value = String(((maxCameraZ - targetCameraZ) / (maxCameraZ - minCameraZ)) * 100);
         });
 
+        const reset = document.createElement('button');
+        reset.className = 'model-reset-btn';
+        reset.title = 'Reset model view';
+        reset.type = 'button';
+        reset.innerHTML = '<i class="fa-solid fa-crosshairs"></i>';
+        wrap.appendChild(reset);
+        reset.addEventListener('click', () => {
+            targetCameraZ = defaultCameraZ;
+            slider.value = '50';
+            targetRotY = 0;
+            baseRotY = 0;
+            pointerOffsetRotY = 0;
+        });
+
         // wheel to zoom
         canvas.addEventListener('wheel', (ev) => {
             ev.preventDefault();
@@ -144,14 +170,26 @@
             const center = box.getCenter(new THREE.Vector3());
             const size   = box.getSize(new THREE.Vector3());
             const maxDim = Math.max(size.x, size.y, size.z);
-            const scale  = 30 / maxDim;
+            const scale  = 8 / maxDim;
 
             model.position.sub(center);
             model.scale.setScalar(scale);
 
             modelGroup.add(model);
-            modelGroup.position.y = -16.5;
-            modelGroup.position.x = 4.5;
+            modelGroup.position.set(0, 0, 0);
+
+            const fitDistance = (maxDim * scale) / (2 * Math.tan((camera.fov * Math.PI) / 360));
+            camera.position.z = Math.max(4.8, fitDistance * 0.92);
+            camera.lookAt(0, 0, 0);
+            cameraZ = camera.position.z;
+            targetCameraZ = cameraZ;
+            defaultCameraZ = cameraZ;
+
+            model.traverse(node => {
+                if (!node.isMesh) return;
+                node.castShadow = true;
+                node.receiveShadow = true;
+            });
 
             // initialize rotations/scales
             currentRotY = model.rotation.y;
@@ -163,6 +201,8 @@
             // Hide label once loaded
             const label = document.querySelector('.model-label');
             if (label) label.textContent = 'ACLC Fatima Campus';
+            const loading = document.getElementById('modelLoading');
+            if (loading) loading.classList.add('is-hidden');
         },
         function(progress) {
             // Loading progress
@@ -171,6 +211,8 @@
             console.warn('GLB load error:', error);
             const label = document.querySelector('.model-label');
             if (label) label.textContent = '3D model ready';
+            const loading = document.getElementById('modelLoading');
+            if (loading) loading.textContent = 'Preview unavailable';
         }
     );
 
