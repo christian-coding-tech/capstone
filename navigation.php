@@ -158,6 +158,19 @@
                     </article>
                 </div>
             </section>
+            <section class="campus-events" aria-labelledby="campusEventsTitle">
+                <div class="campus-guide-heading">
+                    <div><p class="section-kicker">Campus calendar</p><h2 id="campusEventsTitle">Upcoming campus events</h2></div>
+                    <i class="fa-solid fa-calendar-days" aria-hidden="true"></i>
+                </div>
+                <div class="public-calendar-toolbar">
+                    <button type="button" id="publicCalPrev" aria-label="Previous month"><i class="fa-solid fa-chevron-left"></i></button>
+                    <strong id="publicCalMonth"></strong>
+                    <button type="button" id="publicCalNext" aria-label="Next month"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+                <div class="public-calendar" id="publicCalendar" aria-label="Campus events calendar"></div>
+                <div class="public-calendar-events" id="publicCalendarEvents" aria-live="polite"><p>Select a date to see its events.</p></div>
+            </section>
         </div>
     </div>
 
@@ -195,5 +208,6 @@
     </button>
 
     <script src="js/navigation.js"></script>
+    <script src="js/events-calendar.js"></script>
 </body>
 </html>

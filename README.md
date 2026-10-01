@@ -10,6 +10,7 @@ The system provides these main features:
 - Campus map previews, route markers, landmark selection, zooming, panning, and facility previews.
 - Interactive 3D campus model on the landing page.
 - Student and teacher reservation workflows.
+- Course-targeted campus events, student event history, QR attendance, and host/admin attendance tracking.
 - Teacher schedules and venue availability.
 - Student, teacher, and administrator accounts.
 - Administrator tools for reservations, users, feedback, and notification badges.
@@ -54,6 +55,16 @@ aclc_campus.sql        Database schema and sample data
 7. Configure the database credentials in `db/connection.php` if your local credentials differ.
 8. Add the Gemini API key to the project configuration used by `auth/nav_chatbot_handler.php`.
 9. Open the application at `http://localhost/capstone/`.
+
+### Event attendance feature
+
+- On an existing database, run `db/event_attendance_migration.sql` once before using the event features. A fresh database imported from the updated `aclc_campus.sql` already has the required columns and table; do not run the migration on top of that schema.
+- If `db/event_attendance_migration.sql` was already run before department notifications were added, run `db/department_notifications_migration.sql` once. Do not run it after importing the updated SQL dump.
+- Admins should populate student `course` and all-account `department` fields (or include them in the student/teacher CSV files). Reservations can target all students, one course, or a department.
+- Students find approved events under Event History. Their personal QR is used by the teacher/staff host or an admin to check them in during the scheduled event.
+- Authenticated student, teacher/staff, and admin dashboards display an event-invitation bell; visitors do not receive account notifications.
+- Teachers/staff can review hosted event rosters from Hosted Events. Admins can review them from Events or from an approved event on the Schedule calendar.
+- QR creation and scanning use browser-loaded QR libraries; camera scanning requires HTTPS (or localhost) and camera permission.
 
 Do not copy SQL statements into the database without reviewing them first. The SQL dump contains schema definitions and sample records.
 

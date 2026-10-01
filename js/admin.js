@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ── Tab switching ──
-    const noFilterTabs = ['schedule', 'teachers', 'students'];
+    const noFilterTabs = ['schedule', 'events', 'teachers', 'students'];
 
     tabBtns.forEach(btn => {
             btn.addEventListener('click', async () => {
@@ -175,6 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
             approved: loadReservations,
             rejected: loadReservations,
             schedule: loadSchedule,
+            events: () => EventTools.renderEvents(tabContent),
             teachers: loadTeachers,
             students: loadStudents,
             feedback: loadFeedback,
@@ -419,6 +420,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div>
                         <div class="teacher-name">${t.full_name}</div>
                         <div class="teacher-uid">${t.user_id}</div>
+                        <div class="teacher-uid">${t.department || 'Department not set'}</div>
                         <div class="teacher-email">${t.email || 'No email'}</div>
                         ${pendingEmailHtml}
                     </div>
@@ -427,6 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="status-badge ${statusClass}">${statusLabel}</span>
                     <div class="card-actions">
                         ${toggleBtn}
+                        <button class="action-btn" onclick="setTeacherDepartment(${t.id})"><i class="fa-solid fa-building"></i> Department</button>
                         <button class="action-btn" onclick="openResetPw(${t.id})">
                             <i class="fa-solid fa-key"></i> Reset PW
                         </button>
@@ -607,6 +610,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div>
                         <div class="teacher-name">${s.full_name}</div>
                         <div class="teacher-uid">${s.user_id}</div>
+                        <div class="teacher-uid">${s.course || 'Course not set'}</div>
+                        <div class="teacher-uid">${s.department || 'Department not set'}</div>
                         <div class="teacher-email">${s.email || 'No email'}</div>
                     </div>
                 </div>
@@ -615,6 +620,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${reasonBadge}
                     <div class="card-actions">
                         ${actionBtns}
+                        <button class="action-btn" onclick="setStudentDepartment(${s.id})"><i class="fa-solid fa-building"></i> Department</button>
                         <button class="action-btn" onclick="openResetPw(${s.id})">
                             <i class="fa-solid fa-key"></i> Reset PW
                         </button>
@@ -640,6 +646,36 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await res.json();
         if (data.success) loadStudents();
         else alert(data.message);
+    };
+
+    window.setStudentDepartment = async function(id) {
+        const department = prompt('Enter this student’s department. Leave blank to clear it:');
+        if (department === null) return;
+        const fd = new FormData();
+        fd.append('action', 'set_department');
+        fd.append('id', id);
+        fd.append('department', department.trim());
+        try {
+            const response = await fetch('auth/manage_students.php', { method: 'POST', body: fd });
+            const data = await response.json();
+            if (!response.ok || !data.success) throw new Error(data.message || 'Could not update department.');
+            loadStudents();
+        } catch (error) { alert(error.message); }
+    };
+
+    window.setTeacherDepartment = async function(id) {
+        const department = prompt('Enter this teacher/staff member’s department. Leave blank to clear it:');
+        if (department === null) return;
+        const fd = new FormData();
+        fd.append('action', 'set_department');
+        fd.append('id', id);
+        fd.append('department', department.trim());
+        try {
+            const response = await fetch('auth/manage_teachers.php', { method: 'POST', body: fd });
+            const data = await response.json();
+            if (!response.ok || !data.success) throw new Error(data.message || 'Could not update department.');
+            loadTeachers();
+        } catch (error) { alert(error.message); }
     };
 
     deactivateStudentClose.addEventListener('click', () => closeModal(deactivateStudentModal));
@@ -724,15 +760,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── Shared CSV helpers ──
     function buildCsvPreviewHtml(preview, type) {
+        const includesCourse = type === 'student';
         const rows = preview.map(r => `
             <tr>
                 <td>${r.full_name}</td>
                 <td>${r.user_id}</td>
                 <td>${r.email || '—'}</td>
+                ${includesCourse ? `<td>${r.course || '—'}</td>` : ''}
+                <td>${r.department || '—'}</td>
             </tr>`).join('');
         return `
             <table class="csv-preview-table">
-                <thead><tr><th>Full Name</th><th>User ID</th><th>Email</th></tr></thead>
+                <thead><tr><th>Full Name</th><th>User ID</th><th>Email</th>${includesCourse ? '<th>Course</th>' : ''}<th>Department</th></tr></thead>
                 <tbody>${rows}</tbody>
             </table>
             <button class="confirm-csv-btn" id="confirmCsvBtn">
@@ -868,7 +907,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span><i class="fa-solid fa-chalkboard-user"></i> ${r.teacher_name}</span>
                     <span><i class="fa-solid fa-clock"></i> ${formatTime(r.time_start)} — ${formatTime(r.time_end)}</span>
                 </div>
+                <button class="action-btn calendar-attendance-btn" data-calendar-roster="${Number(r.id)}"><i class="fa-solid fa-users"></i> View attendees</button>
+                <div class="hosted-event-roster" id="calendar-roster-${Number(r.id)}" hidden></div>
             </div>`).join('');
+        dayModalContent.querySelectorAll('[data-calendar-roster]').forEach(button => button.addEventListener('click', () => {
+            const roster = dayModalContent.querySelector(`#calendar-roster-${button.dataset.calendarRoster}`);
+            roster.hidden = !roster.hidden;
+            if (!roster.hidden) EventTools.showRoster(button.dataset.calendarRoster, roster);
+        }));
         openModal(dayModal);
     };
 

@@ -1,3 +1,3 @@
-full_name,user_id,email
-Juan dela Cruz,TCH002,juan@aclc.edu
-Maria Santos,TCH003,maria@aclc.edu
+full_name,user_id,email,department
+Juan dela Cruz,TCH002,juan@aclc.edu,Information Technology
+Maria Santos,TCH003,maria@aclc.edu,Business

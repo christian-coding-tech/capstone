@@ -57,11 +57,11 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const res  = await fetch('auth/login_handler.php', { method: 'POST', body: formData });
             const data = await res.json();
-            if (data.success) {
+            if (res.ok && data.success && data.redirect) {
                 loginSubmit.querySelector('span').textContent = 'Redirecting...';
-                window.location.href = data.redirect;
+                window.location.assign(data.redirect);
             } else {
-                loginError.textContent = data.message;
+                loginError.textContent = data.message || 'Unable to sign in. Please try again.';
                 loginError.classList.add('visible');
                 loginSubmit.disabled = false;
                 loginSubmit.querySelector('span').textContent = 'Sign In';

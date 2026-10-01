@@ -14,14 +14,14 @@ $action = trim($_POST['action'] ?? $_GET['action'] ?? '');
 if ($action === 'get') {
     $search = trim($_GET['search'] ?? '');
     $query  = "
-        SELECT id, user_id, full_name, email, status, deactivation_reason, created_at
+        SELECT id, user_id, full_name, email, course, department, status, deactivation_reason, created_at
         FROM users WHERE role = 'student'
     ";
     $params = [];
     if ($search) {
-        $query   .= " AND (full_name LIKE ? OR user_id LIKE ? OR email LIKE ?)";
+        $query   .= " AND (full_name LIKE ? OR user_id LIKE ? OR email LIKE ? OR course LIKE ? OR department LIKE ?)";
         $s        = "%$search%";
-        $params[] = $s; $params[] = $s; $params[] = $s;
+        $params[] = $s; $params[] = $s; $params[] = $s; $params[] = $s; $params[] = $s;
     }
     $query .= " ORDER BY full_name ASC";
     $stmt   = $pdo->prepare($query);
@@ -35,6 +35,8 @@ if ($action === 'add') {
     $full_name = trim($_POST['full_name'] ?? '');
     $user_id   = trim($_POST['user_id']   ?? '');
     $email     = trim($_POST['email']     ?? '');
+    $course    = trim($_POST['course']    ?? '');
+    $department = trim($_POST['department'] ?? '');
     $password  = trim($_POST['password']  ?? '');
 
     if (!$full_name || !$user_id || !$password) {
@@ -49,12 +51,11 @@ if ($action === 'add') {
         exit;
     }
 
-    $hashed = password_hash($password, PASSWORD_DEFAULT);
     $stmt   = $pdo->prepare("
-        INSERT INTO users (user_id, password, full_name, role, email, status)
-        VALUES (?, ?, ?, 'student', ?, 'inactive')
+        INSERT INTO users (user_id, password, full_name, role, email, course, department, status)
+        VALUES (?, ?, ?, 'student', ?, ?, ?, 'inactive')
     ");
-    $stmt->execute([$user_id, $hashed, $full_name, $email ?: null]);
+    $stmt->execute([$user_id, $password, $full_name, $email ?: null, $course ?: null, $department ?: null]);
     echo json_encode(['success' => true, 'message' => 'Student account created. Activate it to allow login.']);
     exit;
 }
@@ -97,7 +98,7 @@ if ($action === 'csv_confirm') {
         exit;
     }
 
-    $defaultPassword = password_hash('aclc1234', PASSWORD_DEFAULT);
+    $defaultPassword = 'aclc1234';
     $created = 0; $skipped = 0;
 
     foreach ($accounts as $acc) {
@@ -106,10 +107,10 @@ if ($action === 'csv_confirm') {
         if ($check->fetch()) { $skipped++; continue; }
 
         $stmt = $pdo->prepare("
-            INSERT INTO users (user_id, password, full_name, role, email, status)
-            VALUES (?, ?, ?, 'student', ?, 'inactive')
+            INSERT INTO users (user_id, password, full_name, role, email, course, department, status)
+                VALUES (?, ?, ?, 'student', ?, ?, ?, 'inactive')
         ");
-        $stmt->execute([$acc['user_id'], $defaultPassword, $acc['full_name'], $acc['email'] ?: null]);
+            $stmt->execute([$acc['user_id'], $defaultPassword, $acc['full_name'], $acc['email'] ?: null, trim($acc['course'] ?? '') ?: null, trim($acc['department'] ?? '') ?: null]);
         $created++;
     }
 
@@ -137,6 +138,19 @@ if ($action === 'toggle_status') {
     ");
     $stmt->execute([$status, $reason ?: null, $id]);
     echo json_encode(['success' => true, 'message' => 'Student status updated.']);
+    exit;
+}
+
+if ($action === 'set_department') {
+    $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
+    $department = trim($_POST['department'] ?? '');
+    if (!$id) {
+        echo json_encode(['success' => false, 'message' => 'Invalid student account.']);
+        exit;
+    }
+    $stmt = $pdo->prepare("UPDATE users SET department = ? WHERE id = ? AND role = 'student'");
+    $stmt->execute([$department ?: null, $id]);
+    echo json_encode(['success' => true, 'message' => 'Student department updated.']);
     exit;
 }
 

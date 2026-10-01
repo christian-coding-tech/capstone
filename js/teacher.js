@@ -176,14 +176,19 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.classList.add('active');
             activeTab = btn.dataset.tab;
 
-            const fd = new FormData();
-            fd.append('status', activeTab);
-            await fetch('auth/mark_read.php', { method: 'POST', body: fd });
+            const isHostedEvents = activeTab === 'hosted-events';
+            document.querySelector('.date-filter').style.display = isHostedEvents ? 'none' : 'flex';
+            if (!isHostedEvents) {
+                const fd = new FormData();
+                fd.append('status', activeTab);
+                await fetch('auth/mark_read.php', { method: 'POST', body: fd });
+            }
 
             const badge = document.getElementById(`badge-${activeTab}`);
             if (badge) { badge.textContent = ''; badge.classList.remove('visible'); }
 
-            loadReservations();
+            if (isHostedEvents) EventTools.renderEvents(tabContent);
+            else loadReservations();
         });
     });
 
@@ -204,6 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── FAB → Reservation Modal ──
     fabBtn.addEventListener('click', () => {
         reservForm.reset();
+        syncAudienceFields();
         fileLabel.textContent = 'Click to upload or drag & drop';
         fileWrap.classList.remove('has-file');
         document.getElementById('roomFieldWrap').style.display = 'none';
@@ -432,7 +438,57 @@ document.addEventListener('DOMContentLoaded', () => {
     chatbotInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendChatMessage(); });
 
     // ── Init ──
+    async function loadEventCourses() {
+        const targetCourse = document.getElementById('targetCourse');
+        try {
+            const response = await fetch('auth/get_event_courses.php');
+            const data = await response.json();
+            if (!data.success) return;
+            data.courses.forEach(course => {
+                const option = document.createElement('option');
+                option.value = course;
+                option.textContent = course;
+                targetCourse.appendChild(option);
+            });
+        } catch {}
+    }
+
+    const audienceScope = document.getElementById('audienceScope');
+    const targetCourse = document.getElementById('targetCourse');
+    const targetCourseWrap = document.getElementById('targetCourseWrap');
+    const targetDepartment = document.getElementById('targetDepartment');
+    const targetDepartmentWrap = document.getElementById('targetDepartmentWrap');
+
+    function syncAudienceFields() {
+        const scope = audienceScope.value;
+        targetCourseWrap.hidden = scope !== 'course';
+        targetCourse.disabled = scope !== 'course';
+        targetCourse.required = scope === 'course';
+        targetDepartmentWrap.hidden = scope !== 'department';
+        targetDepartment.disabled = scope !== 'department';
+        targetDepartment.required = scope === 'department';
+    }
+
+    audienceScope.addEventListener('change', syncAudienceFields);
+
+    async function loadEventDepartments() {
+        try {
+            const response = await fetch('auth/get_event_departments.php');
+            const data = await response.json();
+            if (!data.success) return;
+            data.departments.forEach(department => {
+                const option = document.createElement('option');
+                option.value = department;
+                option.textContent = department;
+                targetDepartment.appendChild(option);
+            });
+        } catch {}
+    }
+
     loadVenues();
+    loadEventCourses();
+    loadEventDepartments();
+    syncAudienceFields();
     loadBadges();
     loadReservations();
 });

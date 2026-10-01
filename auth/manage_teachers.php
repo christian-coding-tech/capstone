@@ -14,14 +14,14 @@ $action = trim($_POST['action'] ?? $_GET['action'] ?? '');
 if ($action === 'get') {
     $search = trim($_GET['search'] ?? '');
     $query  = "
-        SELECT id, user_id, full_name, email, status, pending_email, created_at
+        SELECT id, user_id, full_name, email, department, status, pending_email, created_at
         FROM users WHERE role = 'teacher'
     ";
     $params = [];
     if ($search) {
-        $query   .= " AND (full_name LIKE ? OR user_id LIKE ? OR email LIKE ?)";
+        $query   .= " AND (full_name LIKE ? OR user_id LIKE ? OR email LIKE ? OR department LIKE ?)";
         $s        = "%$search%";
-        $params[] = $s; $params[] = $s; $params[] = $s;
+        $params[] = $s; $params[] = $s; $params[] = $s; $params[] = $s;
     }
     $query .= " ORDER BY full_name ASC";
     $stmt   = $pdo->prepare($query);
@@ -35,6 +35,7 @@ if ($action === 'add') {
     $full_name = trim($_POST['full_name'] ?? '');
     $user_id   = trim($_POST['user_id']   ?? '');
     $email     = trim($_POST['email']     ?? '');
+    $department = trim($_POST['department'] ?? '');
     $password  = trim($_POST['password']  ?? '');
 
     if (!$full_name || !$user_id || !$password) {
@@ -49,12 +50,11 @@ if ($action === 'add') {
         exit;
     }
 
-    $hashed = password_hash($password, PASSWORD_DEFAULT);
     $stmt   = $pdo->prepare("
-        INSERT INTO users (user_id, password, full_name, role, email, status)
-        VALUES (?, ?, ?, 'teacher', ?, 'inactive')
+        INSERT INTO users (user_id, password, full_name, role, email, department, status)
+        VALUES (?, ?, ?, 'teacher', ?, ?, 'inactive')
     ");
-    $stmt->execute([$user_id, $hashed, $full_name, $email ?: null]);
+    $stmt->execute([$user_id, $password, $full_name, $email ?: null, $department ?: null]);
     echo json_encode(['success' => true, 'message' => 'Teacher account created. Activate it to allow login.']);
     exit;
 }
@@ -99,7 +99,7 @@ if ($action === 'csv_confirm') {
         exit;
     }
 
-    $defaultPassword = password_hash('aclc1234', PASSWORD_DEFAULT);
+    $defaultPassword = 'aclc1234';
     $created = 0;
     $skipped = 0;
 
@@ -109,10 +109,10 @@ if ($action === 'csv_confirm') {
         if ($check->fetch()) { $skipped++; continue; }
 
         $stmt = $pdo->prepare("
-            INSERT INTO users (user_id, password, full_name, role, email, status)
-            VALUES (?, ?, ?, 'teacher', ?, 'inactive')
+            INSERT INTO users (user_id, password, full_name, role, email, department, status)
+                VALUES (?, ?, ?, 'teacher', ?, ?, 'inactive')
         ");
-        $stmt->execute([$acc['user_id'], $defaultPassword, $acc['full_name'], $acc['email'] ?: null]);
+            $stmt->execute([$acc['user_id'], $defaultPassword, $acc['full_name'], $acc['email'] ?: null, trim($acc['department'] ?? '') ?: null]);
         $created++;
     }
 
@@ -136,6 +136,19 @@ if ($action === 'toggle_status') {
     $stmt = $pdo->prepare("UPDATE users SET status = ? WHERE id = ? AND role = 'teacher'");
     $stmt->execute([$new_status, $id]);
     echo json_encode(['success' => true, 'message' => 'Account status updated.']);
+    exit;
+}
+
+if ($action === 'set_department') {
+    $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
+    $department = trim($_POST['department'] ?? '');
+    if (!$id) {
+        echo json_encode(['success' => false, 'message' => 'Invalid staff account.']);
+        exit;
+    }
+    $stmt = $pdo->prepare("UPDATE users SET department = ? WHERE id = ? AND role = 'teacher'");
+    $stmt->execute([$department ?: null, $id]);
+    echo json_encode(['success' => true, 'message' => 'Staff department updated.']);
     exit;
 }
 
@@ -185,9 +198,8 @@ if ($action === 'reset_password') {
         exit;
     }
 
-    $hashed = password_hash($new_password, PASSWORD_DEFAULT);
     $stmt   = $pdo->prepare("UPDATE users SET password = ? WHERE id = ? AND role = 'teacher'");
-    $stmt->execute([$hashed, $id]);
+    $stmt->execute([$new_password, $id]);
     echo json_encode(['success' => true, 'message' => 'Password reset successfully.']);
     exit;
 }

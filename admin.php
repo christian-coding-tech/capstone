@@ -16,6 +16,7 @@ $admin_name = $_SESSION['user_name'];
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="css/dashboard-polish.css">
     <title>Admin Dashboard — ACLC Fatima</title>
 </head>
 <body>
@@ -33,6 +34,7 @@ $admin_name = $_SESSION['user_name'];
                 <i class="fa-solid fa-circle-user"></i>
                 <span><?php echo htmlspecialchars($admin_name); ?></span>
             </div>
+            <div class="account-notifications" id="accountNotifications"></div>
             <a href="auth/logout.php" class="logout-btn">
                 <i class="fa-solid fa-right-from-bracket"></i>
                 <span>Logout</span>
@@ -41,6 +43,17 @@ $admin_name = $_SESSION['user_name'];
     </header>
 
     <main class="dashboard-main">
+        <section class="dashboard-hero" aria-labelledby="dashboardWelcome">
+            <div class="dashboard-hero-copy">
+                <span class="dashboard-eyebrow"><i class="fa-solid fa-sparkles"></i> Campus operations</span>
+                <h1 id="dashboardWelcome">Welcome back, <?php echo htmlspecialchars($admin_name); ?></h1>
+                <p>Review reservations, manage campus accounts, and keep the ACLC Fatima community running smoothly.</p>
+            </div>
+            <div class="dashboard-hero-actions">
+                <a class="dashboard-shortcut primary" href="navigation.php#campusEventsTitle"><i class="fa-solid fa-calendar-days"></i> Events calendar</a>
+                <a class="dashboard-shortcut" href="index.php"><i class="fa-solid fa-house"></i> Landing page</a>
+            </div>
+        </section>
         <div class="tabs-wrapper">
             <div class="tabs">
                 <button class="tab-btn active" data-tab="pending">
@@ -57,6 +70,9 @@ $admin_name = $_SESSION['user_name'];
                 </button>
                 <button class="tab-btn" data-tab="schedule">
                     <i class="fa-solid fa-calendar-days"></i> Schedule
+                </button>
+                <button class="tab-btn" data-tab="events">
+                    <i class="fa-solid fa-clipboard-check"></i> Events
                 </button>
                 <button class="tab-btn" data-tab="teachers">
                     <i class="fa-solid fa-chalkboard-user"></i> Teachers
@@ -139,6 +155,10 @@ $admin_name = $_SESSION['user_name'];
                     <input type="email" name="email" placeholder="teacher@aclc.edu">
                 </div>
                 <div class="form-group">
+                    <label>Department</label>
+                    <input type="text" name="department" placeholder="e.g. Information Technology">
+                </div>
+                <div class="form-group">
                     <label>Password</label>
                     <input type="text" name="password" placeholder="Temporary password" required>
                 </div>
@@ -155,7 +175,7 @@ $admin_name = $_SESSION['user_name'];
         <div class="modal-box modal-box-wide">
             <button class="modal-close" id="csvClose"><i class="fa-solid fa-xmark"></i></button>
             <h2 class="modal-title">Bulk Upload Teachers</h2>
-            <p class="modal-subtitle">Upload a CSV with columns: full_name, user_id, email</p>
+            <p class="modal-subtitle">Upload a CSV with columns: full_name, user_id, email, department</p>
             <div class="modal-error"   id="csvError"></div>
             <div class="modal-success" id="csvSuccess"></div>
             <div class="csv-template">
@@ -203,6 +223,14 @@ $admin_name = $_SESSION['user_name'];
                     <input type="email" name="email" placeholder="student@aclc.edu">
                 </div>
                 <div class="form-group">
+                    <label>Department</label>
+                    <input type="text" name="department" placeholder="e.g. Information Technology">
+                </div>
+                <div class="form-group">
+                    <label>Course / Program <span class="optional">(used to target events)</span></label>
+                    <input type="text" name="course" placeholder="e.g. BSIT">
+                </div>
+                <div class="form-group">
                     <label>Password</label>
                     <input type="text" name="password" placeholder="Temporary password" required>
                 </div>
@@ -219,7 +247,7 @@ $admin_name = $_SESSION['user_name'];
         <div class="modal-box modal-box-wide">
             <button class="modal-close" id="studentCsvClose"><i class="fa-solid fa-xmark"></i></button>
             <h2 class="modal-title">Bulk Upload Students</h2>
-            <p class="modal-subtitle">Upload a CSV with columns: full_name, user_id, email</p>
+            <p class="modal-subtitle">Upload a CSV with columns: full_name, user_id, email, course, department</p>
             <div class="modal-error"   id="studentCsvError"></div>
             <div class="modal-success" id="studentCsvSuccess"></div>
             <div class="csv-template">
@@ -332,6 +360,9 @@ $admin_name = $_SESSION['user_name'];
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+    <script src="js/event-tools.js"></script>
+    <script src="js/account-notifications.js"></script>
     <script src="js/admin.js"></script>
 </body>
 </html>

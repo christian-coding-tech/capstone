@@ -20,7 +20,20 @@ $stmt = $pdo->prepare("SELECT * FROM users WHERE user_id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if (!$user || !password_verify($password, $user['password'])) {
+if (!$user) {
+    echo json_encode(['success' => false, 'message' => 'Invalid User ID or password.']);
+    exit;
+}
+
+// Accept plaintext passwords and migrate legacy hashes after a successful login.
+$passwordMatches = hash_equals((string) $user['password'], $password);
+if (!$passwordMatches && password_verify($password, $user['password'])) {
+    $passwordMatches = true;
+    $updatePassword = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
+    $updatePassword->execute([$password, $user['id']]);
+}
+
+if (!$passwordMatches) {
     echo json_encode(['success' => false, 'message' => 'Invalid User ID or password.']);
     exit;
 }
@@ -43,11 +56,20 @@ $log = $pdo->prepare("INSERT INTO login_logs (user_id, action) VALUES (?, 'login
 $log->execute([$user['id']]);
 
 $redirects = [
-    'admin'   => '/capstone/admin.php',
-    'teacher' => '/capstone/teacher.php',
-    'student' => '/capstone/student.php',
+    'admin'   => 'admin.php',
+    'teacher' => 'teacher.php',
+    'student' => 'student.php',
 ];
 
-echo json_encode(['success' => true, 'redirect' => $redirects[$user['role']]]);
+if (!isset($redirects[$user['role']])) {
+    echo json_encode(['success' => false, 'message' => 'This account has an invalid role.']);
+    exit;
+}
+
+// Resolve the app's mount directory instead of assuming it is always /capstone.
+$appBasePath = rtrim(dirname(dirname($_SERVER['SCRIPT_NAME'] ?? '/auth/login_handler.php')), '/\\');
+$redirect = ($appBasePath !== '' ? $appBasePath : '') . '/' . $redirects[$user['role']];
+
+echo json_encode(['success' => true, 'redirect' => $redirect]);
 exit;
 ?>

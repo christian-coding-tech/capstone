@@ -156,6 +156,9 @@ CREATE TABLE `reservations` (
   `teacher_id` int(11) NOT NULL,
   `venue_id` int(11) NOT NULL,
   `event_name` varchar(100) NOT NULL,
+  `target_course` varchar(100) DEFAULT NULL,
+  `target_department` varchar(100) DEFAULT NULL,
+  `attendees_seeded` tinyint(1) NOT NULL DEFAULT 0,
   `date_of_use` date NOT NULL,
   `time_start` time NOT NULL,
   `time_end` time NOT NULL,
@@ -200,6 +203,24 @@ CREATE TABLE `schedules` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `event_attendees`
+--
+
+CREATE TABLE `event_attendees` (
+  `id` int(11) NOT NULL,
+  `reservation_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `qr_token` char(64) NOT NULL,
+  `attendance_status` enum('registered','attended','absent','unavailable') NOT NULL DEFAULT 'registered',
+  `invite_read` tinyint(1) NOT NULL DEFAULT 0,
+  `invited_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `checked_in_at` datetime DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `users`
 --
 
@@ -210,6 +231,8 @@ CREATE TABLE `users` (
   `full_name` varchar(100) NOT NULL,
   `role` enum('admin','teacher','student') NOT NULL,
   `email` varchar(100) DEFAULT NULL,
+  `course` varchar(100) DEFAULT NULL,
+  `department` varchar(100) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `status` enum('inactive','active','deactivated') DEFAULT 'active',
   `pending_email` varchar(100) DEFAULT NULL,
@@ -220,11 +243,11 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `user_id`, `password`, `full_name`, `role`, `email`, `created_at`, `status`, `pending_email`, `deactivation_reason`) VALUES
-(1, 'ADMIN001', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'System Admin', 'admin', 'admin@aclc.edu', '2026-05-26 08:02:27', 'active', NULL, NULL),
-(2, 'TCH001', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Juan dela Cruz', 'teacher', 'teacher@aclc.edu', '2026-05-26 08:02:27', 'active', NULL, NULL),
-(3, 'STU001', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Maria Santos', 'student', 'student@aclc.edu', '2026-05-26 08:02:27', 'active', NULL, NULL),
-(4, 'STAFF001', '$2y$10$Fyc6bT3gNjbpd0qJ/E626OHb3btZgZVtkPpJ6Pi1ouuupDIlZeEjS', 'Mei', 'teacher', NULL, '2026-05-26 15:59:30', 'active', NULL, NULL);
+INSERT INTO `users` (`id`, `user_id`, `password`, `full_name`, `role`, `email`, `course`, `department`, `created_at`, `status`, `pending_email`, `deactivation_reason`) VALUES
+(1, 'ADMIN001', 'password', 'System Admin', 'admin', 'admin@aclc.edu', NULL, 'Administration', '2026-05-26 08:02:27', 'active', NULL, NULL),
+(2, 'TCH001', 'password', 'Juan dela Cruz', 'teacher', 'teacher@aclc.edu', NULL, 'Information Technology', '2026-05-26 08:02:27', 'active', NULL, NULL),
+(3, 'STU001', 'password', 'Maria Santos', 'student', 'student@aclc.edu', 'BSIT', 'Information Technology', '2026-05-26 08:02:27', 'active', NULL, NULL),
+(4, 'STAFF001', '$2y$10$Fyc6bT3gNjbpd0qJ/E626OHb3btZgZVtkPpJ6Pi1ouuupDIlZeEjS', 'Mei', 'teacher', NULL, NULL, 'Administration', '2026-05-26 15:59:30', 'active', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -267,6 +290,15 @@ ALTER TABLE `admin_seen`
 --
 ALTER TABLE `feedback`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `event_attendees`
+--
+ALTER TABLE `event_attendees`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_event_attendee` (`reservation_id`,`user_id`),
+  ADD UNIQUE KEY `unique_qr_token` (`qr_token`),
+  ADD KEY `attendee_user` (`user_id`);
 
 --
 -- Indexes for table `login_logs`
@@ -328,6 +360,12 @@ ALTER TABLE `feedback`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
+-- AUTO_INCREMENT for table `event_attendees`
+--
+ALTER TABLE `event_attendees`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `login_logs`
 --
 ALTER TABLE `login_logs`
@@ -372,6 +410,13 @@ ALTER TABLE `venues`
 --
 ALTER TABLE `admin_seen`
   ADD CONSTRAINT `admin_seen_ibfk_1` FOREIGN KEY (`admin_id`) REFERENCES `users` (`id`);
+
+--
+-- Constraints for table `event_attendees`
+--
+ALTER TABLE `event_attendees`
+  ADD CONSTRAINT `event_attendees_reservation_fk` FOREIGN KEY (`reservation_id`) REFERENCES `reservations` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `event_attendees_user_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `login_logs`

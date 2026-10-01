@@ -29,6 +29,7 @@ if ($action === 'rejected' && !$rejection_reason) {
 }
 
 if ($action === 'approved') {
+    $pdo->beginTransaction();
     $stmt = $pdo->prepare("
         UPDATE reservations
         SET status = 'approved',
@@ -39,6 +40,9 @@ if ($action === 'approved') {
         WHERE id = ?
     ");
     $stmt->execute([$admin_id, $reservation_id]);
+    require_once 'event_helpers.php';
+    seedEventAttendees($pdo, (int) $reservation_id);
+    $pdo->commit();
 } else {
     $stmt = $pdo->prepare("
         UPDATE reservations

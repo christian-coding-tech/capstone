@@ -16,6 +16,7 @@ $teacher_name = $_SESSION['user_name'];
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/teacher.css">
+    <link rel="stylesheet" href="css/dashboard-polish.css">
     <title>Teacher Dashboard — ACLC Fatima</title>
 </head>
 <body>
@@ -28,7 +29,7 @@ $teacher_name = $_SESSION['user_name'];
             </div>
             <div class="header-titles">
                 <span class="school-name">ACLC College Tacloban - Fatima Campus</span>
-                <span class="page-label">Teacher Dashboard</span>
+                <span class="page-label">Teacher &amp; Staff Dashboard</span>
             </div>
         </div>
         <div class="header-right">
@@ -36,6 +37,7 @@ $teacher_name = $_SESSION['user_name'];
                 <i class="fa-solid fa-circle-user"></i>
                 <span><?php echo htmlspecialchars($teacher_name); ?></span>
             </div>
+            <div class="account-notifications" id="accountNotifications"></div>
             <a href="auth/logout.php" class="logout-btn">
                 <i class="fa-solid fa-right-from-bracket"></i>
                 <span>Logout</span>
@@ -45,6 +47,18 @@ $teacher_name = $_SESSION['user_name'];
 
     <!-- Main -->
     <main class="dashboard-main">
+
+        <section class="dashboard-hero" aria-labelledby="dashboardWelcome">
+            <div class="dashboard-hero-copy">
+                <span class="dashboard-eyebrow"><i class="fa-solid fa-sparkles"></i> Faculty &amp; staff workspace</span>
+                <h1 id="dashboardWelcome">Welcome back, <?php echo htmlspecialchars($teacher_name); ?></h1>
+                <p>Track reservation requests, review approved bookings, and plan your next campus activity.</p>
+            </div>
+            <div class="dashboard-hero-actions">
+                <button class="dashboard-shortcut primary" type="button" onclick="document.getElementById('fabBtn').click()"><i class="fa-solid fa-plus"></i> New reservation</button>
+                <a class="dashboard-shortcut" href="navigation.php#campusEventsTitle"><i class="fa-solid fa-calendar-days"></i> Events calendar</a>
+            </div>
+        </section>
 
         <!-- Tabs -->
         <div class="tabs-wrapper">
@@ -63,6 +77,9 @@ $teacher_name = $_SESSION['user_name'];
                     <i class="fa-solid fa-circle-xmark"></i>
                     Rejected
                     <span class="badge badge-red" id="badge-rejected"></span>
+                </button>
+                <button class="tab-btn" data-tab="hosted-events">
+                    <i class="fa-solid fa-calendar-check"></i> Hosted Events
                 </button>
             </div>
 
@@ -135,6 +152,23 @@ $teacher_name = $_SESSION['user_name'];
                     <label for="eventName">Event</label>
                     <input type="text" id="eventName" name="event_name" placeholder="e.g. Leadership Seminar, Club Meeting..." required>
                 </div>
+                <div class="form-group">
+                    <label for="audienceScope">Invite students by</label>
+                    <select id="audienceScope" name="audience_scope">
+                        <option value="all">All students</option>
+                        <option value="course">Course / program</option>
+                        <option value="department">Department</option>
+                    </select>
+                </div>
+                <div class="form-group" id="targetCourseWrap" hidden>
+                    <label for="targetCourse">Course / program</label>
+                    <select id="targetCourse" name="target_course" disabled><option value="">Select a course</option></select>
+                </div>
+                <div class="form-group" id="targetDepartmentWrap" hidden>
+                    <label for="targetDepartment">Department</label>
+                    <select id="targetDepartment" name="target_department" disabled><option value="">Select a department</option></select>
+                </div>
+                <small class="form-hint">Only active students in the selected audience are invited. QR codes are created after approval.</small>
                 <div class="form-row">
                     <div class="form-group">
                         <label for="timeStart">Time Start</label>
@@ -201,6 +235,9 @@ $teacher_name = $_SESSION['user_name'];
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+    <script src="js/event-tools.js"></script>
+    <script src="js/account-notifications.js"></script>
     <script src="js/teacher.js"></script>
 </body>
 </html>

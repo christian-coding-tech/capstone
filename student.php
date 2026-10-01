@@ -16,6 +16,7 @@ $student_name = $_SESSION['user_name'];
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/teacher.css">
+    <link rel="stylesheet" href="css/dashboard-polish.css">
     <title>Student Dashboard — ACLC Fatima</title>
 </head>
 <body>
@@ -36,6 +37,7 @@ $student_name = $_SESSION['user_name'];
                 <i class="fa-solid fa-circle-user"></i>
                 <span><?php echo htmlspecialchars($student_name); ?></span>
             </div>
+            <div class="account-notifications" id="accountNotifications"></div>
             <a href="auth/logout.php" class="logout-btn">
                 <i class="fa-solid fa-right-from-bracket"></i>
                 <span>Logout</span>
@@ -44,20 +46,22 @@ $student_name = $_SESSION['user_name'];
     </header>
 
     <main class="dashboard-main">
-        <div class="tabs-wrapper">
+        <section class="dashboard-hero" aria-labelledby="dashboardWelcome">
+            <div class="dashboard-hero-copy">
+                <span class="dashboard-eyebrow"><i class="fa-solid fa-sparkles"></i> Student portal</span>
+                <h1 id="dashboardWelcome">Welcome back, <?php echo htmlspecialchars($student_name); ?></h1>
+                <p>Keep track of your campus reservation requests and see the latest updates from your school.</p>
+            </div>
+            <div class="dashboard-hero-actions">
+                <a class="dashboard-shortcut primary" href="navigation.php#campusEventsTitle"><i class="fa-solid fa-calendar-days"></i> Events calendar</a>
+                <a class="dashboard-shortcut" href="index.php"><i class="fa-solid fa-house"></i> Landing page</a>
+            </div>
+        </section>
+        <div class="tabs-wrapper" id="eventHistory">
             <div class="tabs">
-                <button class="tab-btn active" data-tab="my-reservations">
-                    <i class="fa-solid fa-clock"></i>
-                    My Reservations
-n                </button>
-                <button class="tab-btn" data-tab="approved">
-                    <i class="fa-solid fa-circle-check"></i>
-                    Approved
-                </button>
-                <button class="tab-btn" data-tab="rejected">
-                    <i class="fa-solid fa-circle-xmark"></i>
-                    Rejected
-                </button>
+                <button class="tab-btn active" data-history="upcoming"><i class="fa-solid fa-hourglass-half"></i> On-going / Pre-booked</button>
+                <button class="tab-btn" data-history="attended"><i class="fa-solid fa-circle-check"></i> Attended</button>
+                <button class="tab-btn" data-history="missed"><i class="fa-solid fa-clock-rotate-left"></i> Missed / Unable</button>
             </div>
         </div>
 
@@ -100,6 +104,8 @@ n                </button>
         </div>
     </div>
 
-    <script src="js/teacher.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="js/student-events.js"></script>
+    <script src="js/account-notifications.js"></script>
 </body>
 </html>

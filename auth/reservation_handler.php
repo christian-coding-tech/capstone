@@ -17,6 +17,8 @@ $teacher_id  = $_SESSION['user_id'];
 $venue_id    = trim($_POST['venue_id']    ?? '');
 $room_number = trim($_POST['room_number'] ?? '');
 $event_name  = trim($_POST['event_name']  ?? '');
+$target_course = trim($_POST['target_course'] ?? '');
+$target_department = trim($_POST['target_department'] ?? '');
 $date_of_use = trim($_POST['date_of_use'] ?? '');
 $time_start  = trim($_POST['time_start']  ?? '');
 $time_end    = trim($_POST['time_end']    ?? '');
@@ -24,6 +26,29 @@ $time_end    = trim($_POST['time_end']    ?? '');
 if (!$venue_id || !$event_name || !$date_of_use || !$time_start || !$time_end) {
     echo json_encode(['success' => false, 'message' => 'Please fill in all fields.']);
     exit;
+}
+
+if ($target_course !== '' && $target_department !== '') {
+    echo json_encode(['success' => false, 'message' => 'Choose either a course or department audience, not both.']);
+    exit;
+}
+
+if ($target_course !== '') {
+    $courseCheck = $pdo->prepare("SELECT 1 FROM users WHERE role = 'student' AND status = 'active' AND course = ? LIMIT 1");
+    $courseCheck->execute([$target_course]);
+    if (!$courseCheck->fetchColumn()) {
+        echo json_encode(['success' => false, 'message' => 'Select a course with active student accounts, or choose all students.']);
+        exit;
+    }
+}
+
+if ($target_department !== '') {
+    $departmentCheck = $pdo->prepare("SELECT 1 FROM users WHERE role = 'student' AND status = 'active' AND department = ? LIMIT 1");
+    $departmentCheck->execute([$target_department]);
+    if (!$departmentCheck->fetchColumn()) {
+        echo json_encode(['success' => false, 'message' => 'Select a department with active student accounts, or choose all students.']);
+        exit;
+    }
 }
 
 $proposal_pdf = null;
@@ -77,10 +102,10 @@ if ($conflict->fetch()) {
 $full_event = $room_number ? $event_name . ' — ' . $room_number : $event_name;
 
 $stmt = $pdo->prepare("
-    INSERT INTO reservations (teacher_id, venue_id, event_name, date_of_use, time_start, time_end, proposal_pdf)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO reservations (teacher_id, venue_id, event_name, target_course, target_department, date_of_use, time_start, time_end, proposal_pdf)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 ");
-$stmt->execute([$teacher_id, $venue_id, $full_event, $date_of_use, $time_start, $time_end, $proposal_pdf]);
+$stmt->execute([$teacher_id, $venue_id, $full_event, $target_course ?: null, $target_department ?: null, $date_of_use, $time_start, $time_end, $proposal_pdf]);
 
 echo json_encode(['success' => true, 'message' => 'Reservation request submitted successfully.']);
 exit;

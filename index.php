@@ -79,6 +79,11 @@
                     <span><strong>Explore key areas</strong><small>Preview the Main Building, Library, Court, and Cafeteria.</small></span>
                     <i class="fa-solid fa-arrow-up-right-from-square overview-arrow"></i>
                 </a>
+                <a class="overview-card" href="navigation.php#campusEventsTitle">
+                    <span class="overview-icon overview-blue"><i class="fa-solid fa-calendar-days"></i></span>
+                    <span><strong>Campus events</strong><small>Browse the campus calendar and upcoming activities.</small></span>
+                    <i class="fa-solid fa-arrow-up-right-from-square overview-arrow"></i>
+                </a>
                 <button class="overview-card" type="button" id="overviewFeedback">
                     <span class="overview-icon overview-amber"><i class="fa-solid fa-message"></i></span>
                     <span><strong>Share feedback</strong><small>Help improve the campus experience for everyone.</small></span>
