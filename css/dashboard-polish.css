@@ -310,11 +310,22 @@ body::before {
 .event-search-wrap input { width: 100%; min-height: 44px; border: 0; outline: 0; background: transparent; color: var(--portal-text); font: inherit; font-size: 0.84rem; }
 .event-search-wrap input::placeholder { color: var(--portal-muted); }
 .hosted-event-card[hidden] { display: none; }
+.event-history-toolbar { display: grid; gap: 12px; margin-bottom: 16px; }
+.event-category-control { display: grid; gap: 6px; width: min(100%, 320px); color: var(--portal-muted); font-size: 0.75rem; font-weight: 700; }
+.event-category-select-wrap { position: relative; display: block; }
+.event-category-select { width: 100%; min-height: 44px; appearance: none; padding: 10px 42px 10px 13px; border: 1px solid var(--portal-line); border-radius: 12px; background: rgba(9, 20, 36, 0.9); color: var(--portal-text); font: inherit; font-size: 0.84rem; cursor: pointer; }
+.event-category-select:focus-visible { outline: 2px solid var(--portal-cyan); outline-offset: 2px; }
+.event-category-select option { background: #10243b; color: var(--portal-text); }
+.event-category-select-wrap > i { position: absolute; top: 50%; right: 14px; color: var(--portal-cyan); pointer-events: none; transform: translateY(-50%); }
+.event-history-list { display: grid; gap: 14px; min-width: 0; }
+.event-rejection-reason { display: grid; gap: 4px; margin-top: 14px; padding: 12px 14px; border: 1px solid rgba(220, 100, 110, 0.2); border-radius: 12px; background: rgba(220, 100, 110, 0.08); color: #f0a7b0; font-size: 0.82rem; line-height: 1.5; }
+.event-rejection-reason strong { color: #ffc0c7; }
 
 .account-notifications { position: relative; z-index: 60; display: flex; align-items: center; }
 .notification-bell { position: relative; display: grid; width: 42px; height: 42px; place-items: center; border: 1px solid var(--portal-line); border-radius: 13px; background: rgba(255,255,255,0.05); color: #c5e5fb; font-size: 1rem; cursor: pointer; transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease; }
 .notification-bell:hover, .notification-bell[aria-expanded="true"] { transform: translateY(-1px); border-color: rgba(125,196,245,0.45); background: rgba(74,144,217,0.16); }
 .notification-count { position: absolute; top: -6px; right: -6px; display: grid; min-width: 19px; height: 19px; padding: 0 4px; place-items: center; border: 2px solid #0b1220; border-radius: 999px; background: #e45f72; color: white; font-size: 0.62rem; font-weight: 800; }
+.notification-count[hidden] { display: none; }
 .notification-popover { position: absolute; top: calc(100% + 12px); right: 0; width: min(370px, calc(100vw - 28px)); overflow: hidden; border: 1px solid var(--portal-line); border-radius: 17px; background: rgba(10,24,43,0.98); box-shadow: 0 24px 64px rgba(0,0,0,0.4); backdrop-filter: blur(18px); }
 .notification-popover[hidden] { display: none; }
 .notification-popover-heading { display: flex; justify-content: space-between; align-items: center; padding: 15px 16px; border-bottom: 1px solid var(--portal-line); }
@@ -335,6 +346,82 @@ body::before {
 .notification-unread-dot { width: 7px; height: 7px; flex: 0 0 7px; margin: 5px 0 0 auto; border-radius: 50%; background: var(--portal-mint); }
 .notification-loading, .notification-empty { display: flex; align-items: center; justify-content: center; gap: 9px; min-height: 100px; padding: 18px; color: var(--portal-muted); font-size: 0.76rem; text-align: center; }
 .notification-empty i { color: var(--portal-cyan); }
+
+/* Dialogs and their contents must never expand beyond a phone viewport. */
+@media (max-width: 760px) {
+    html,
+    body { max-width: 100%; overflow-x: clip; }
+
+    .modal-overlay {
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 100vw;
+        padding: max(10px, env(safe-area-inset-top)) 10px max(10px, env(safe-area-inset-bottom));
+        overflow-x: clip;
+        overflow-y: auto;
+        align-items: center;
+        overscroll-behavior: contain;
+    }
+
+    .modal-box,
+    .modal-box-wide {
+        box-sizing: border-box;
+        flex: 0 1 auto;
+        width: 100%;
+        min-width: 0;
+        max-width: calc(100vw - 20px);
+        max-height: calc(100vh - 20px);
+        max-height: calc(100dvh - 20px);
+        margin: auto 0;
+        padding: 28px 18px;
+        overflow-x: clip;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    .modal-box > *,
+    .modal-box-wide > *,
+    .modal-form,
+    .form-group,
+    .proposal-detail-box,
+    #proposalContent,
+    #dayModalContent,
+    #csvPreview,
+    #studentCsvPreview { min-width: 0; max-width: 100%; }
+
+    .modal-box img,
+    .modal-box video,
+    .modal-box canvas,
+    .modal-box iframe { max-width: 100%; }
+
+    .modal-title,
+    .modal-subtitle,
+    .modal-error,
+    .modal-success,
+    .form-group label,
+    .file-upload-wrap,
+    .pending-email-notice,
+    .detail-row span,
+    .day-res-venue,
+    .day-res-event { overflow-wrap: anywhere; }
+
+    .modal-close { top: 12px; right: 12px; }
+    .modal-title { padding-right: 38px; }
+    .detail-row { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 8px 12px; }
+    .detail-row span:last-child { text-align: right; }
+    .csv-preview-table { width: 100%; min-width: 0; table-layout: fixed; }
+    .csv-preview-table th,
+    .csv-preview-table td { padding: 8px 6px; overflow-wrap: anywhere; }
+    #csvPreview,
+    #studentCsvPreview { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
+
+@media (max-width: 380px) {
+    .modal-box,
+    .modal-box-wide { padding: 26px 14px 18px; }
+    .detail-row { grid-template-columns: minmax(0, 1fr); gap: 3px; }
+    .detail-row span:last-child { text-align: left; }
+}
 
 .empty-state, .loading-state {
     min-height: 230px;
@@ -357,23 +444,34 @@ body::before {
 }
 
 @media (max-width: 760px) {
-    .dashboard-header { align-items: flex-start; padding: 12px 16px; }
-    .school-name { max-width: 48vw; font-size: 0.78rem; line-height: 1.35; }
-    .page-label { font-size: 0.66rem; }
-    .header-right { gap: 8px; }
+    /* min-width: 0 on the flex chain lets the school name wrap instead of
+       pushing the header actions past the right edge of the viewport. */
+    .dashboard-header { align-items: center; gap: 10px; padding: 10px 14px; }
+    .header-left { flex: 1 1 auto; min-width: 0; gap: 10px; }
+    .school-logo { width: 38px; height: 38px; border-radius: 12px; font-size: 1rem; }
+    .header-titles { min-width: 0; }
+    .school-name { max-width: none; overflow-wrap: anywhere; font-size: 0.72rem; line-height: 1.3; }
+    .page-label { overflow: hidden; font-size: 0.6rem; text-overflow: ellipsis; white-space: nowrap; }
+    .header-right { position: relative; flex: 0 0 auto; gap: 8px; }
+    .header-right > div { max-width: 30vw; overflow: hidden; font-size: 0.72rem; text-overflow: ellipsis; white-space: nowrap; }
     .header-right > .account-notifications { max-width: none; overflow: visible; }
-    .notification-bell { width: 38px; height: 38px; }
-    .header-right > div { max-width: 34vw; overflow: hidden; font-size: 0.76rem; text-overflow: ellipsis; white-space: nowrap; }
-    .logout-btn { padding: 9px 11px; }
+    .notification-bell { width: 36px; height: 36px; }
+    .logout-btn { padding: 8px 10px; }
     .logout-btn span { display: none; }
-    .dashboard-main { padding-top: 22px; }
+    /* Anchor the popover to .header-right so it can never slide past the viewport edge. */
+    .account-notifications { position: static; }
+    .notification-popover { right: 0; width: min(370px, calc(100vw - 28px)); }
+    /* Bottom padding clears the stacked floating action buttons and chatbot launcher. */
+    .dashboard-main { padding-top: 22px; padding-bottom: 180px; }
     .dashboard-hero { align-items: flex-start; flex-direction: column; gap: 18px; border-radius: 20px; }
+    .dashboard-hero h1 { overflow-wrap: anywhere; }
     .dashboard-hero p { font-size: 0.86rem; }
     .dashboard-hero-actions { width: 100%; }
     .dashboard-shortcut { flex: 1 1 145px; }
     .tabs-wrapper { padding: 9px; }
-    .tabs { width: 100%; }
-    .tab-btn { flex: 1 1 auto; justify-content: center; padding: 9px 11px; font-size: 0.78rem; }
+    /* Wrap instead of overflowing: the admin dashboard alone carries nine tabs. */
+    .tabs { width: 100%; flex-wrap: wrap; }
+    .tab-btn { flex: 1 1 auto; justify-content: center; min-width: 0; padding: 9px 11px; font-size: 0.78rem; }
     .date-filter { width: 100%; }
     .date-filter input[type="date"] { flex: 1 1 120px; min-width: 0; }
     .request-card { flex-direction: column; padding: 19px; }
@@ -381,6 +479,103 @@ body::before {
     .hosted-event-heading { flex-direction: column; gap: 8px; }
     .hosted-event-date { text-align: left; }
     .event-qr-wrap { align-items: flex-start; flex-direction: column; }
+    .event-category-control { width: 100%; }
+}
+
+@media (max-width: 480px) {
+    /* The signed-in name is already shown in the hero greeting, so drop it from
+       the header entirely and give the school name room to breathe. Scoped away
+       from .account-notifications so the unread count badge stays visible. */
+    .header-right > div:not(.account-notifications) { max-width: none; }
+    .header-right > div:not(.account-notifications) > span { display: none; }
+    .dashboard-main { padding: 20px 14px 180px; }
+    .tabs-wrapper { margin-bottom: 16px; }
+    /* Two tabs per row keeps the nine-tab admin list compact without clipping it. */
+    .tab-btn { flex: 1 1 44%; }
+    .notification-popover { max-height: 70vh; }
+    .notification-list { max-height: 52vh; }
+    .attendance-table-wrap { -webkit-overflow-scrolling: touch; }
+}
+
+/* Keep dashboard content readable and reachable on narrow touch screens. */
+@media (max-width: 760px) {
+    .dashboard-main,
+    .dashboard-main > *,
+    .tab-content,
+    .card-left,
+    .teacher-card-left,
+    .teacher-card-left > div,
+    .hosted-event-card,
+    .feedback-card,
+    .request-card { min-width: 0; }
+
+    .dashboard-hero-copy,
+    .dashboard-hero-actions { width: 100%; min-width: 0; }
+    .dashboard-shortcut { flex: 1 1 150px; }
+    .tabs-wrapper { width: 100%; }
+    .date-filter { width: 100%; min-width: 0; }
+    .date-filter input[type="date"] { flex: 1 1 135px; min-width: 0; }
+    .filter-btn { flex: 1 1 auto; justify-content: center; }
+    .card-meta { min-width: 0; gap: 9px 14px; }
+    .card-meta span,
+    .feedback-sender,
+    .feedback-date { min-width: 0; overflow-wrap: anywhere; }
+    .card-right { min-width: 0; }
+    .card-actions,
+    .toolbar-actions,
+    .hosted-event-actions { max-width: 100%; }
+    .toolbar-actions > *,
+    .hosted-event-actions > * { max-width: 100%; }
+    .teacher-toolbar,
+    .schedule-toolbar { min-width: 0; }
+    .cal-search { flex: 1 1 100%; width: 100%; max-width: none; min-width: 0; }
+    .cal-search input { min-width: 0; }
+    .event-qr-wrap { max-width: 100%; }
+    .event-qr-wrap > span { max-width: 100%; overflow-wrap: anywhere; }
+    .modal-overlay { align-items: flex-start; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    .modal-box { max-height: calc(100vh - 24px); margin: auto 0; }
+}
+
+@media (max-width: 480px) {
+    .dashboard-hero { padding: 21px 18px; }
+    .dashboard-hero h1 { font-size: clamp(1.55rem, 7vw, 2rem); }
+    .dashboard-shortcut { flex-basis: 100%; }
+    .tabs { gap: 6px; }
+    .tab-btn { min-height: 42px; }
+    .request-card { padding: 16px; }
+    .card-right { align-items: flex-start; flex-direction: column; }
+    .card-actions { justify-content: flex-start; }
+    .action-btn,
+    .toolbar-btn { min-height: 40px; }
+    .hosted-event-card { padding: 17px; }
+    .hosted-event-stats,
+    .attendance-summary { gap: 7px; }
+    .modal-box { width: 100%; padding: 28px 18px; border-radius: 22px; }
+    .modal-title { padding-right: 38px; font-size: 1.25rem; overflow-wrap: anywhere; }
+    .detail-row { align-items: flex-start; gap: 12px; }
+    .detail-row span:last-child { overflow-wrap: anywhere; }
+}
+
+/* These final declarations win over the earlier dashboard mobile rules above. */
+@media (max-width: 760px) {
+    .modal-overlay {
+        align-items: center;
+        padding: max(10px, env(safe-area-inset-top)) 10px max(10px, env(safe-area-inset-bottom));
+        overflow-x: clip;
+    }
+
+    .modal-box,
+    .modal-box-wide {
+        max-width: calc(100vw - 20px);
+        max-height: calc(100vh - 20px);
+        max-height: calc(100dvh - 20px);
+        padding: 28px 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-box,
+    .modal-box-wide { padding: 28px 18px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

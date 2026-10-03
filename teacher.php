@@ -79,7 +79,7 @@ $teacher_name = $_SESSION['user_name'];
                     <span class="badge badge-red" id="badge-rejected"></span>
                 </button>
                 <button class="tab-btn" data-tab="hosted-events">
-                    <i class="fa-solid fa-calendar-check"></i> Hosted Events
+                    <i class="fa-solid fa-clock-rotate-left"></i> Event History
                 </button>
             </div>
 

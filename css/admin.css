@@ -1069,13 +1069,132 @@ body {
     .dashboard-header { padding: 14px 18px; }
     .school-name { font-size: 0.78rem; }
     .tabs-wrapper { flex-direction: column; align-items: flex-start; }
+    .tabs { flex-wrap: wrap; }
     .request-card { flex-direction: column; }
     .card-right { align-items: flex-start; }
     .cal-event-pill { display: none; }
     .cal-day { min-height: 60px; }
+    /* 360px + a 32px offset runs off narrow screens, and a fixed 480px height
+       runs off short ones. Anchor both edges and size the height from the
+       viewport so it is never clipped, keeping clear of the launcher below. */
+    .chatbot-panel {
+        right: 16px;
+        bottom: 86px;
+        left: 16px;
+        width: auto;
+        max-width: 420px;
+        height: min(480px, calc(100vh - 102px));
+    }
+    .chatbot-fab { right: 16px; bottom: 16px; }
+}
+
+/* Landscape phones have no room for the panel above the launcher. */
+@media (max-width: 768px) and (max-height: 620px) {
+    .chatbot-panel {
+        bottom: 16px;
+        height: calc(100vh - 32px);
+    }
 }
 
 @media (max-width: 480px) {
     .dashboard-main { padding: 20px 16px 80px; }
     .modal-box { padding: 28px 20px; }
+    .modal-overlay { padding: 12px; }
+    .schedule-toolbar { gap: 10px; }
+    .cal-nav { width: 100%; justify-content: space-between; }
+    .cal-nav-btn { flex: 0 0 36px; }
+    .cal-month-label { min-width: 0; font-size: 0.95rem; }
+    .cal-search { width: 100%; min-width: 0; max-width: none; }
+}
+
+/* Mobile-only admin layout safeguards. */
+@media (max-width: 760px) {
+    .log-table-wrap { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .log-table { min-width: 620px; }
+    .calendar-grid { min-width: 0; }
+    .cal-header-cell { padding: 9px 2px; font-size: 0.62rem; letter-spacing: 0; }
+    .cal-body,
+    .cal-header-row { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+    .cal-day { min-width: 0; padding: 6px 3px; }
+    .teacher-toolbar,
+    .schedule-toolbar { width: 100%; }
+    .teacher-card { min-width: 0; }
+    .teacher-card-left { min-width: 0; flex: 1 1 100%; }
+    .teacher-card-right { width: 100%; }
+    .pending-email-notice { flex-wrap: wrap; overflow-wrap: anywhere; }
+    .csv-preview-table { min-width: 560px; }
+    #csvPreview,
+    #studentCsvPreview { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
+
+@media (max-width: 480px) {
+    .cal-day { min-height: 48px; }
+    .cal-day-num { margin-bottom: 0; font-size: 0.75rem; }
+    .cal-day.today .cal-day-num { width: 22px; height: 22px; font-size: 0.7rem; }
+    .date-filter { gap: 7px; }
+    .date-filter input[type="date"] { flex-basis: 125px; padding: 8px 7px; font-size: 0.78rem; }
+    .filter-btn { padding: 8px 10px; }
+}
+
+@media (max-width: 760px) {
+    html,
+    body { max-width: 100%; overflow-x: clip; }
+    .modal-overlay {
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 100vw;
+        padding: max(10px, env(safe-area-inset-top)) 10px max(10px, env(safe-area-inset-bottom));
+        overflow-x: clip;
+        overflow-y: auto;
+        align-items: center;
+        overscroll-behavior: contain;
+    }
+    .modal-box,
+    .modal-box-wide {
+        box-sizing: border-box;
+        width: 100%;
+        min-width: 0;
+        max-width: calc(100vw - 20px);
+        max-height: calc(100vh - 20px);
+        max-height: calc(100dvh - 20px);
+        margin: auto 0;
+        padding: 28px 18px;
+        overflow-x: clip;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+    .modal-box > *,
+    .modal-form,
+    .form-group,
+    .proposal-detail-box,
+    #proposalContent,
+    #dayModalContent,
+    #csvPreview,
+    #studentCsvPreview { min-width: 0; max-width: 100%; }
+    .modal-box img,
+    .modal-box video,
+    .modal-box iframe { max-width: 100%; }
+    .modal-title,
+    .modal-subtitle,
+    .modal-error,
+    .modal-success,
+    .form-group label,
+    .file-upload-wrap,
+    .detail-row span,
+    .day-res-venue,
+    .day-res-event { overflow-wrap: anywhere; }
+    .modal-close { top: 12px; right: 12px; }
+    .modal-title { padding-right: 38px; }
+    .detail-row { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 8px 12px; }
+    .detail-row span:last-child { text-align: right; }
+    .csv-preview-table { width: 100%; min-width: 0; table-layout: fixed; }
+    .csv-preview-table th,
+    .csv-preview-table td { padding: 8px 6px; overflow-wrap: anywhere; }
+}
+
+@media (max-width: 380px) {
+    .modal-box,
+    .modal-box-wide { padding: 26px 14px 18px; }
+    .detail-row { grid-template-columns: minmax(0, 1fr); gap: 3px; }
+    .detail-row span:last-child { text-align: left; }
 }

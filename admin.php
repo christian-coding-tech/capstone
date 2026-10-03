@@ -72,7 +72,7 @@ $admin_name = $_SESSION['user_name'];
                     <i class="fa-solid fa-calendar-days"></i> Schedule
                 </button>
                 <button class="tab-btn" data-tab="events">
-                    <i class="fa-solid fa-clipboard-check"></i> Events
+                    <i class="fa-solid fa-clock-rotate-left"></i> Event History
                 </button>
                 <button class="tab-btn" data-tab="teachers">
                     <i class="fa-solid fa-chalkboard-user"></i> Teachers

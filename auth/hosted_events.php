@@ -12,7 +12,8 @@ if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'teac
 
 try {
     seedEventAttendees($pdo);
-    $sql = "SELECT r.id AS event_id, r.event_name, r.date_of_use, r.time_start, r.time_end,
+        $sql = "SELECT r.id AS event_id, r.event_name, r.date_of_use, r.time_start, r.time_end,
+            r.status, r.rejection_reason,
             r.target_course, r.target_department, v.name AS venue_name, u.full_name AS host_name,
             COUNT(ea.id) AS attendee_count,
             SUM(ea.attendance_status = 'attended') AS attended_count,
@@ -24,7 +25,7 @@ try {
         JOIN venues v ON v.id = r.venue_id
         JOIN users u ON u.id = r.teacher_id
         LEFT JOIN event_attendees ea ON ea.reservation_id = r.id
-        WHERE r.status = 'approved'";
+        WHERE r.status IN ('approved', 'rejected')";
     $params = [];
     if ($_SESSION['role'] === 'teacher') {
         $sql .= ' AND r.teacher_id = ?';

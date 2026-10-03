@@ -697,6 +697,9 @@ body {
     gap: 7px;
     padding: 0 14px 10px;
     flex-shrink: 0;
+    /* Cap the block so a long option list cannot push the input row out of the panel. */
+    max-height: 34%;
+    overflow-y: auto;
 }
 
 .nav-quick-reply-btn {
@@ -762,6 +765,8 @@ body {
         font-size: 2.4rem;
     }
 
+    /* Reclaim horizontal room so the map canvas stays wide enough for its labels. */
+    .sample-map { padding: 15px; }
     .campus-guide {
         padding: 16px;
     }
@@ -774,12 +779,37 @@ body {
     .route-brief-badge { grid-column: 2; justify-self: start; }
     .map-gesture { width: 100%; margin-left: 0; }
 
+    .map-viewport { height: 320px; }
+
+    /* The chips are anchored by their top-left corner, so on a narrow canvas they
+       would hang past the right edge and be clipped by the workspace. Shrink them
+       and pull the anchors inward to keep every label fully inside the map. */
+    .map-hotspot {
+        gap: 4px;
+        padding: 5px 8px;
+        font-size: 0.6rem;
+    }
+
+    .hotspot-main { top: 20%; left: 50%; }
+    .hotspot-court { top: 50%; left: 34%; }
+    .hotspot-gate { top: 64%; left: 62%; }
+    .hotspot-garden { top: 42%; left: 10%; }
+
+    .map-help {
+        right: 54px;
+        left: 12px;
+        width: auto;
+    }
+
     .nav-chatbot-panel {
-        width: calc(100vw - 32px);
         right: 16px;
         bottom: 16px;
-        height: 60vh;
+        left: 16px;
+        width: auto;
+        max-width: 420px;
+        height: min(520px, calc(100vh - 32px));
     }
+    .nav-chatbot-tab { right: 16px; bottom: 16px; }
 }
 
 @keyframes contentReveal {
@@ -1067,6 +1097,49 @@ body {
 }
 
 .map-viewport.is-facility::after { display: none; }
+
+@media (max-width: 760px) {
+    .nav-bg-content { width: min(100%, calc(100% - 24px)); padding-right: 12px; padding-left: 12px; }
+    .coming-soon-title { overflow-wrap: anywhere; }
+    .coming-soon-desc br { display: none; }
+    .sample-map,
+    .campus-guide,
+    .campus-events { min-width: 0; max-width: 100%; }
+    .sample-map-heading { align-items: flex-start; flex-wrap: wrap; }
+    .map-status { white-space: normal; }
+    .map-viewport { height: clamp(260px, 65vw, 360px); }
+    .map-tools { max-width: calc(100% - 20px); }
+    .map-legend { flex-wrap: wrap; gap: 8px 14px; }
+    .map-location-info { align-items: flex-start; }
+    .map-location-info > div { min-width: 0; overflow-wrap: anywhere; }
+    .campus-guide-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .back-btn { top: 12px; left: 12px; padding: 9px 12px; font-size: 0.78rem; }
+}
+
+@media (max-width: 480px) {
+    .nav-bg-content { padding-top: 78px; padding-bottom: 130px; }
+    .coming-soon-badge { max-width: 100%; padding: 7px 12px; font-size: 0.68rem; letter-spacing: 0.06em; }
+    .coming-soon-title { font-size: clamp(2rem, 9vw, 2.4rem); }
+    .coming-soon-subtitle { overflow-wrap: anywhere; font-size: 0.88rem; }
+    .sample-map-heading { gap: 10px; }
+    .route-brief { min-width: 0; }
+    .route-brief-content p { white-space: normal; overflow-wrap: anywhere; }
+    .campus-guide-grid { grid-template-columns: 1fr; }
+    .map-viewport { height: 280px; }
+    .map-hotspot { max-width: 40%; overflow: hidden; text-overflow: ellipsis; }
+    .back-btn { top: 10px; left: 10px; }
+    .public-calendar-toolbar { gap: 8px; }
+    .public-calendar-toolbar strong { min-width: 120px; }
+    .public-event-item { min-width: 0; align-items: flex-start; gap: 8px; }
+    .public-event-item > div { min-width: 0; overflow-wrap: anywhere; }
+}
+
+@media (max-width: 360px) {
+    .sample-map { padding: 12px; }
+    .map-hotspot { gap: 3px; padding: 4px 6px; font-size: 0.54rem; }
+    .campus-location { padding: 12px 10px; }
+    .public-calendar-weekday { font-size: 0.58rem; }
+}
 
 .facility-preview {
     position: absolute;
