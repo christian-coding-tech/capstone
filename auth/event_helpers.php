@@ -1,4 +1,19 @@
 <?php
+function ensureUserQrCode(PDO $pdo, int $userId): string
+{
+    $insert = $pdo->prepare('INSERT IGNORE INTO user_qr_codes (user_id, qr_token) VALUES (?, ?)');
+    $insert->execute([$userId, bin2hex(random_bytes(32))]);
+
+    $query = $pdo->prepare('SELECT qr_token FROM user_qr_codes WHERE user_id = ?');
+    $query->execute([$userId]);
+    $token = $query->fetchColumn();
+    if (!$token) {
+        throw new RuntimeException('Unable to create the account QR code.');
+    }
+
+    return $token;
+}
+
 function seedEventAttendees(PDO $pdo, ?int $reservationId = null): void
 {
     $sql = "SELECT r.id, r.target_course, r.target_department
@@ -38,9 +53,25 @@ function seedEventAttendees(PDO $pdo, ?int $reservationId = null): void
 function eventRoleAllowed(PDO $pdo, int $reservationId, array $session): bool
 {
     if (($session['role'] ?? '') === 'admin') return true;
-    if (($session['role'] ?? '') !== 'teacher') return false;
-
-    $stmt = $pdo->prepare('SELECT teacher_id FROM reservations WHERE id = ?');
+    $stmt = $pdo->prepare("SELECT r.teacher_id
+        FROM reservations r JOIN users host ON host.id = r.teacher_id
+        WHERE r.id = ? AND host.status = 'active'");
     $stmt->execute([$reservationId]);
-    return (int) $stmt->fetchColumn() === (int) ($session['user_id'] ?? 0);
+    $teacherId = $stmt->fetchColumn();
+    if (($session['role'] ?? '') === 'teacher' && (int) $teacherId === (int) ($session['user_id'] ?? 0)) {
+        return true;
+    }
+
+    $authorization = $pdo->prepare("SELECT 1 FROM event_scan_authorizations a
+        JOIN users u ON u.id = a.user_id
+        WHERE a.reservation_id = ? AND a.user_id = ? AND u.status = 'active' AND u.role IN ('student', 'teacher')");
+    $authorization->execute([$reservationId, (int) ($session['user_id'] ?? 0)]);
+    return (bool) $authorization->fetchColumn();
+}
+
+function eventHostIsTeacher(PDO $pdo, int $reservationId, int $userId): bool
+{
+    $stmt = $pdo->prepare('SELECT 1 FROM reservations WHERE id = ? AND teacher_id = ?');
+    $stmt->execute([$reservationId, $userId]);
+    return (bool) $stmt->fetchColumn();
 }

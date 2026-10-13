@@ -257,7 +257,7 @@ body {
     position: absolute;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 0;
     padding: 7px 10px;
     border: 1px solid rgba(255, 255, 255, 0.8);
     border-radius: 999px;
@@ -284,16 +284,30 @@ body {
 }
 
 .map-hotspot:hover,
-.map-hotspot.is-selected {
+.map-hotspot.is-selected,
+.map-hotspot:focus-visible {
     background: #0f9a78;
     box-shadow: 0 8px 20px rgba(15, 110, 86, 0.38);
     transform: translateY(-3px) scale(1.04);
 }
 
+.map-hotspot span {
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-width 0.2s ease, opacity 0.2s ease;
+}
+
+.map-hotspot.is-selected span,
+.map-hotspot:focus-visible span {
+    max-width: 150px;
+    margin-left: 6px;
+    opacity: 1;
+}
+
 .hotspot-main { top: 23%; left: 55%; }
 .hotspot-court { top: 55%; left: 40%; }
 .hotspot-gate { top: 68%; left: 72%; }
-.hotspot-garden { top: 50%; left: 16%; }
 
 .map-controls {
     position: absolute;
@@ -345,6 +359,37 @@ body {
 .map-location-info > i { color: #5ed3a3; font-size: 1.05rem; }
 .map-location-info strong { display: block; margin-bottom: 3px; color: #eef6ff; font-size: 0.82rem; }
 .map-location-info p { font-size: 0.74rem; line-height: 1.45; }
+
+.map-photo-placeholder {
+    position: relative;
+    overflow: hidden;
+    min-height: 0;
+    margin-top: 12px;
+    border: 1px solid #d6e7f2;
+    border-radius: 14px;
+    background: #f2f8fc;
+}
+
+.map-photo-placeholder img {
+    display: block;
+    width: 100%;
+    height: clamp(150px, 24vw, 240px);
+    object-fit: contain;
+}
+
+.map-photo-placeholder figcaption {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 14px;
+    border-top: 1px solid #d6e7f2;
+    color: #335873;
+    font-size: 0.78rem;
+    line-height: 1.4;
+}
+
+.map-photo-placeholder figcaption i { flex: 0 0 auto; color: #258bd1; font-size: 1.1rem; }
+.map-photo-placeholder figcaption small { display: block; margin-top: 2px; color: #64819b; font-size: 0.68rem; }
 
 /* ── Campus guide ── */
 .campus-guide {
@@ -407,6 +452,8 @@ body {
     cursor: pointer;
 }
 
+.campus-location > div { min-width: 0; flex: 1; }
+
 .campus-location:hover {
     background: rgba(74, 144, 217, 0.13);
     border-color: rgba(125, 196, 245, 0.32);
@@ -445,6 +492,7 @@ body {
 .campus-location p {
     color: #9eb9da;
     font-size: 0.76rem;
+    overflow-wrap: anywhere;
     line-height: 1.5;
 }
 
@@ -490,8 +538,8 @@ body {
     position: fixed;
     bottom: 32px;
     right: 32px;
-    width: 380px;
-    height: 520px;
+    width: min(420px, calc(100vw - 32px));
+    height: min(580px, calc(100dvh - 48px));
     background: rgba(11,18,32,0.97);
     border: 1px solid rgba(255,255,255,0.13);
     border-radius: 24px;
@@ -550,8 +598,10 @@ body {
 }
 
 .nav-chatbot-messages {
-    flex: 1;
+    flex: 1 1 0;
+    min-height: 0;
     overflow-y: auto;
+    overscroll-behavior: contain;
     padding: 16px;
     display: flex;
     flex-direction: column;
@@ -563,12 +613,14 @@ body {
 .chat-msg.user { justify-content: flex-end; }
 
 .chat-bubble {
-    max-width: 82%;
+    max-width: min(90%, 34rem);
+    overflow-wrap: anywhere;
     padding: 10px 14px;
     border-radius: 16px;
     font-size: 0.88rem;
     line-height: 1.6;
     animation: messageReveal 0.3s ease both;
+    white-space: pre-line;
 }
 
 .chat-msg.bot  .chat-bubble {
@@ -618,6 +670,7 @@ body {
 }
 
 .nav-chatbot-input-wrap input {
+    min-width: 0;
     flex: 1;
     background: rgba(255,255,255,0.07);
     border: 1px solid rgba(255,255,255,0.14);
@@ -703,6 +756,7 @@ body {
 }
 
 .nav-quick-reply-btn {
+    max-width: 100%;
     padding: 6px 13px;
     border-radius: 999px;
     border: 1px solid rgba(74,144,217,0.4);
@@ -712,13 +766,50 @@ body {
     font-family: 'Inter', sans-serif;
     cursor: pointer;
     transition: background 0.2s ease;
-    white-space: nowrap;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: left;
 }
 
 .nav-quick-reply-btn:hover {
     background: rgba(74,144,217,0.25);
     color: #eef6ff;
 }
+
+.nav-person-placeholder {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    flex: 0 0 auto;
+    margin: 0 14px 10px;
+    padding: 10px;
+    border: 1px solid rgba(125, 196, 245, 0.2);
+    border-radius: 12px;
+    background: rgba(8, 16, 31, 0.55);
+    color: #dcecff;
+}
+
+.nav-person-placeholder[hidden] { display: none; }
+.nav-person-photo {
+    display: flex;
+    flex: 0 0 44px;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(125, 196, 245, 0.15);
+    color: #7dc4f5;
+}
+
+.nav-person-placeholder > div:last-child { min-width: 0; overflow-wrap: anywhere; }
+.nav-person-placeholder strong,
+.nav-person-placeholder span,
+.nav-person-placeholder small { display: block; overflow-wrap: anywhere; }
+.nav-person-placeholder strong { font-size: 0.78rem; }
+.nav-person-placeholder span { margin-top: 2px; color: #9eb9da; font-size: 0.7rem; }
+.nav-person-placeholder small { margin-top: 3px; color: #7d94ad; font-size: 0.62rem; }
 
 /* ── Typing indicator ── */
 .typing-indicator {
@@ -785,7 +876,7 @@ body {
        would hang past the right edge and be clipped by the workspace. Shrink them
        and pull the anchors inward to keep every label fully inside the map. */
     .map-hotspot {
-        gap: 4px;
+        gap: 0;
         padding: 5px 8px;
         font-size: 0.6rem;
     }
@@ -793,8 +884,6 @@ body {
     .hotspot-main { top: 20%; left: 50%; }
     .hotspot-court { top: 50%; left: 34%; }
     .hotspot-gate { top: 64%; left: 62%; }
-    .hotspot-garden { top: 42%; left: 10%; }
-
     .map-help {
         right: 54px;
         left: 12px;
@@ -1136,9 +1225,35 @@ body {
 
 @media (max-width: 360px) {
     .sample-map { padding: 12px; }
-    .map-hotspot { gap: 3px; padding: 4px 6px; font-size: 0.54rem; }
+    .map-hotspot { gap: 3px; padding: 4px 6px; font-size: 0.54rem; max-width: 48%; }
     .campus-location { padding: 12px 10px; }
     .public-calendar-weekday { font-size: 0.58rem; }
+
+    /* Chatbot & UI adjustments to prevent overlap on very small screens */
+    .nav-chatbot-panel {
+        width: calc(100% - 20px);
+        right: 10px;
+        left: 10px;
+        bottom: 12px;
+        height: calc(48vh);
+        border-radius: 12px;
+        padding: 0;
+    }
+    .nav-chatbot-messages { padding: 10px; gap: 8px; }
+    .chat-bubble { font-size: 0.82rem; max-width: 84%; }
+    .nav-chatbot-input-wrap { padding: 10px; gap: 6px; }
+    .nav-chatbot-input-wrap input { font-size: 0.86rem; padding: 8px 10px; }
+    .nav-chatbot-send { width: 36px; height: 36px; }
+    .nav-person-placeholder { font-size: 0.78rem; padding: 8px; }
+    .nav-quick-replies { padding: 0 10px 8px; max-height: 28%; }
+    .nav-quick-reply-btn { font-size: 0.74rem; padding: 6px 10px; }
+
+    /* Ensure route brief and map text wrap safely */
+    .route-brief-content strong { white-space: normal; }
+    .route-brief-content p { white-space: normal; }
+    
+    /* small touch targets */
+    .back-btn { padding: 8px 10px; font-size: 0.7rem; }
 }
 
 .facility-preview {
@@ -1348,3 +1463,52 @@ body {
 .legend-destination { background: #e84d61; }
 .map-gesture { margin-left: auto; color: #7894a8; }
 .map-gesture i { color: var(--nav-blue); }
+
+@media (max-width: 760px) {
+    .nav-chatbot-panel {
+        right: 12px;
+        bottom: 12px;
+        left: auto;
+        width: min(420px, calc(100vw - 24px));
+        height: min(580px, calc(100vh - 24px));
+        height: min(580px, calc(100dvh - 24px));
+    }
+
+    .map-photo-placeholder img { height: clamp(140px, 38vw, 220px); }
+}
+
+@media (max-width: 480px) {
+    .nav-chatbot-panel {
+        right: auto;
+        bottom: max(10px, env(safe-area-inset-bottom));
+        left: 50%;
+        width: min(420px, calc(100vw - 20px));
+        height: min(72vh, 560px);
+        height: min(72dvh, 560px);
+        max-height: calc(100dvh - 20px);
+        transform: translate(-50%, 20px) scale(0.97);
+    }
+
+    .nav-chatbot-panel.is-open { transform: translate(-50%, 0) scale(1); }
+    .nav-chatbot-header { padding: 12px 14px; }
+    .nav-chatbot-messages { padding: 12px; gap: 9px; }
+    .chat-bubble { max-width: 94%; padding: 9px 11px; font-size: 0.82rem; line-height: 1.5; }
+    .nav-quick-replies { max-height: min(24vh, 136px); padding: 0 12px 9px; gap: 6px; }
+    .nav-quick-reply-btn { padding: 6px 10px; font-size: 0.73rem; }
+    .nav-person-placeholder { margin: 0 12px 8px; padding: 8px; }
+    .nav-chatbot-input-wrap { gap: 6px; padding: 10px 12px; }
+    .nav-chatbot-input-wrap input { padding: 9px 10px; font-size: 0.82rem; }
+
+    .campus-location { min-width: 0; gap: 9px; }
+    .campus-location h3,
+    .campus-location p { overflow-wrap: anywhere; }
+    .map-photo-placeholder figcaption { align-items: flex-start; padding: 10px 11px; }
+}
+
+@media (max-width: 360px) {
+    .nav-chatbot-panel { width: calc(100vw - 16px); }
+    .nav-chatbot-header { padding: 10px 12px; }
+    .chatbot-title { font-size: 0.86rem; }
+    .nav-person-placeholder { margin-right: 9px; margin-left: 9px; }
+    .nav-quick-replies { padding-right: 9px; padding-left: 9px; }
+}

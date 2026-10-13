@@ -17,6 +17,7 @@ $teacher_name = $_SESSION['user_name'];
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/teacher.css">
     <link rel="stylesheet" href="css/dashboard-polish.css">
+    <link rel="stylesheet" href="css/action-loading.css">
     <title>Teacher Dashboard — ACLC Fatima</title>
 </head>
 <body>
@@ -238,6 +239,16 @@ $teacher_name = $_SESSION['user_name'];
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
     <script src="js/event-tools.js"></script>
     <script src="js/account-notifications.js"></script>
+    <div class="action-loader" id="actionLoader" role="status" aria-live="polite" aria-hidden="true">
+        <div class="action-loader-card">
+            <div class="action-loader-spinner" aria-hidden="true"></div>
+            <div class="action-loader-copy">
+                <p class="action-loader-title">Please wait</p>
+                <p class="action-loader-caption" id="actionLoaderCaption">Working…</p>
+            </div>
+        </div>
+    </div>
+    <script src="js/action-loading.js"></script>
     <script src="js/teacher.js"></script>
 </body>
 </html>

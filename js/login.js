@@ -53,6 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loginError.classList.remove('visible');
         loginSubmit.disabled = true;
         loginSubmit.querySelector('span').textContent = 'Signing in...';
+        if (window.ActionLoading) window.ActionLoading.show('Signing in to your account…');
         const formData = new FormData(loginForm);
         try {
             const res  = await fetch('auth/login_handler.php', { method: 'POST', body: formData });
@@ -63,12 +64,14 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 loginError.textContent = data.message || 'Unable to sign in. Please try again.';
                 loginError.classList.add('visible');
+                if (window.ActionLoading) window.ActionLoading.hide();
                 loginSubmit.disabled = false;
                 loginSubmit.querySelector('span').textContent = 'Sign In';
             }
         } catch {
             loginError.textContent = 'Something went wrong. Please try again.';
             loginError.classList.add('visible');
+            if (window.ActionLoading) window.ActionLoading.hide();
             loginSubmit.disabled = false;
             loginSubmit.querySelector('span').textContent = 'Sign In';
         }

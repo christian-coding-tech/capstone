@@ -4,7 +4,7 @@ require_once '../db/connection.php';
 require_once 'event_helpers.php';
 header('Content-Type: application/json');
 
-if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'teacher'], true)) {
+if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['admin', 'teacher', 'student'], true)) {
     http_response_code(403);
     echo json_encode(['success' => false, 'message' => 'Unauthorized.']);
     exit;

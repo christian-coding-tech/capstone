@@ -17,6 +17,7 @@ $admin_name = $_SESSION['user_name'];
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/admin.css">
     <link rel="stylesheet" href="css/dashboard-polish.css">
+    <link rel="stylesheet" href="css/action-loading.css">
     <title>Admin Dashboard — ACLC Fatima</title>
 </head>
 <body>
@@ -209,7 +210,7 @@ $admin_name = $_SESSION['user_name'];
             <p class="modal-subtitle">Account will be inactive until you activate it</p>
             <div class="modal-error"   id="addStudentError"></div>
             <div class="modal-success" id="addStudentSuccess"></div>
-            <form id="addStudentForm" class="modal-form">
+            <form id="addStudentForm" class="modal-form" enctype="multipart/form-data">
                 <div class="form-group">
                     <label>Full Name</label>
                     <input type="text" name="full_name" placeholder="e.g. Pedro Reyes" required>
@@ -231,6 +232,18 @@ $admin_name = $_SESSION['user_name'];
                     <input type="text" name="course" placeholder="e.g. BSIT">
                 </div>
                 <div class="form-group">
+                    <label>Section</label>
+                    <input type="text" name="section" placeholder="e.g. BSIT 2A">
+                </div>
+                <div class="form-group">
+                    <label>Adviser</label>
+                    <input type="text" name="adviser" placeholder="Student adviser">
+                </div>
+                <div class="form-group">
+                    <label>ID Photo <span class="optional">(JPG, PNG, or WebP; max 5MB)</span></label>
+                    <input type="file" name="id_photo" accept="image/jpeg,image/png,image/webp">
+                </div>
+                <div class="form-group">
                     <label>Password</label>
                     <input type="text" name="password" placeholder="Temporary password" required>
                 </div>
@@ -247,7 +260,7 @@ $admin_name = $_SESSION['user_name'];
         <div class="modal-box modal-box-wide">
             <button class="modal-close" id="studentCsvClose"><i class="fa-solid fa-xmark"></i></button>
             <h2 class="modal-title">Bulk Upload Students</h2>
-            <p class="modal-subtitle">Upload a CSV with columns: full_name, user_id, email, course, department</p>
+            <p class="modal-subtitle">Upload a CSV with columns: full_name, user_id, email, course, department; optional: section, adviser</p>
             <div class="modal-error"   id="studentCsvError"></div>
             <div class="modal-success" id="studentCsvSuccess"></div>
             <div class="csv-template">
@@ -363,6 +376,16 @@ $admin_name = $_SESSION['user_name'];
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
     <script src="js/event-tools.js"></script>
     <script src="js/account-notifications.js"></script>
+    <div class="action-loader" id="actionLoader" role="status" aria-live="polite" aria-hidden="true">
+        <div class="action-loader-card">
+            <div class="action-loader-spinner" aria-hidden="true"></div>
+            <div class="action-loader-copy">
+                <p class="action-loader-title">Please wait</p>
+                <p class="action-loader-caption" id="actionLoaderCaption">Working…</p>
+            </div>
+        </div>
+    </div>
+    <script src="js/action-loading.js"></script>
     <script src="js/admin.js"></script>
 </body>
 </html>

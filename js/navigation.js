@@ -10,6 +10,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const mapCanvas = document.getElementById('mapCanvas');
     const mapLocationName = document.getElementById('mapLocationName');
     const mapLocationDescription = document.getElementById('mapLocationDescription');
+    const personPlaceholder = document.getElementById('navPersonPlaceholder');
+    const personName = document.getElementById('navPersonName');
+    const personDetails = document.getElementById('navPersonDetails');
     const mapRoute = document.getElementById('mapRoute');
     const mapRouteLine = document.getElementById('mapRouteLine');
     const mapRouteStart = document.getElementById('mapRouteStart');
@@ -46,8 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'parking lot': [84, 48],
         'gate / guardhouse': [72, 68],
         'main gate': [72, 68],
-        'garden area': [16, 50]
-        , 'library': [60, 39]
+        'library': [60, 39]
         , 'admin lounge': [62, 53]
         , 'computer lab': [49, 38]
         , 'registrar': [47, 31]
@@ -251,13 +253,23 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch {}
 
     // ── Helpers ──
-    function appendMsg(text, sender) {
+    function appendMsg(text, sender, allowHtml = false) {
         const div = document.createElement('div');
         div.className = `chat-msg ${sender}`;
-        div.innerHTML = `<div class="chat-bubble">${text}</div>`;
+        const bubble = document.createElement('div');
+        bubble.className = 'chat-bubble';
+        if (allowHtml) bubble.innerHTML = text;
+        else bubble.textContent = text;
+        div.appendChild(bubble);
         messages.appendChild(div);
         messages.scrollTop = messages.scrollHeight;
         return div;
+    }
+
+    function escapeHtml(value) {
+        return String(value).replace(/[&<>"']/g, char => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[char]);
     }
 
     function showTyping() {
@@ -293,20 +305,89 @@ document.addEventListener('DOMContentLoaded', () => {
         showTyping();
         await new Promise(r => setTimeout(r, delay));
         removeTyping();
-        appendMsg(text, 'bot');
+        appendMsg(text, 'bot', true);
     }
 
     async function askNavAI(userMessage, context) {
+        personPlaceholder.hidden = true;
         try {
             const fd = new FormData();
             fd.append('message', userMessage);
             fd.append('nav_context', JSON.stringify(context));
             const res  = await fetch('auth/nav_chatbot_handler.php', { method: 'POST', body: fd });
             const data = await res.json();
-            return data.success ? data.reply : "I'm having trouble right now. Please try again.";
+            if (!data.success) return "I couldn't get an answer from the campus assistant right now. Please try again.";
+            if (data.profile) {
+                personName.textContent = data.profile.name;
+                personDetails.textContent = [data.profile.role, data.profile.program, data.profile.section, data.profile.department]
+                    .filter(Boolean).join(' · ');
+                personPlaceholder.hidden = false;
+            }
+            return data.reply;
         } catch {
-            return "I'm having trouble connecting. Please try again.";
+            const normalized = userMessage.toLowerCase();
+            const offlineLocations = {
+                'registrar': 'The Registrar is on the ground floor of the Main Building.',
+                'cashier': 'The Cashier is on the ground floor of the Main Building.',
+                'faculty room': 'The Faculty Room is on the 1st floor of the Main Building.',
+                'library': 'The Library is on the 3rd floor of the Main Building.',
+                'computer lab': 'Computer Labs 1 and 2 are on the 2nd floor of the Main Building.',
+                'admin lounge': 'The Admin Lounge is on the 4th floor of the Main Building.',
+                'main building': 'The Main Building has five floors. Administration, Registrar, and Cashier are on the ground floor; classrooms and the Faculty Room are on the 1st; Computer Labs are on the 2nd; Library is on the 3rd; and the Admin Lounge is on the 4th.'
+            };
+            const foundLocation = Object.entries(offlineLocations).find(([name]) => normalized.includes(name));
+            if (foundLocation) return foundLocation[1];
+            if (normalized.includes('alex demo')) {
+                personName.textContent = 'Alex Demo';
+                personDetails.textContent = 'Teacher · Information Technology';
+                personPlaceholder.hidden = false;
+                return 'Temporary test profile (demo data, not a real campus account): Alex Demo, Information Technology; sample location: Faculty Room.';
+            }
+            if (normalized.includes('jamie demo')) {
+                personName.textContent = 'Jamie Demo';
+                personDetails.textContent = 'Student · BSIT · BSIT Demo 1A';
+                personPlaceholder.hidden = false;
+                return 'Temporary test profile (demo data, not a real campus account): Jamie Demo, BSIT, BSIT Demo 1A; sample campus area: Main Building.';
+            }
+            return 'I can answer a few common campus questions offline. Try asking where the Registrar, Cashier, Faculty Room, Library, Computer Lab, or Admin Lounge is, or ask about the demo teacher Alex Demo or demo student Jamie Demo.';
         }
+    }
+
+    async function answerAssistantQuestion(question) {
+        input.disabled = true;
+        showTyping();
+        const reply = await askNavAI(question, navContext || {});
+        removeTyping();
+        appendMsg(reply, 'bot');
+        showReplies([
+            'Where is the Library?',
+            'Find teacher Alex Demo',
+            'Find test student Jamie Demo',
+            'What events are today?',
+            'Plan a route'
+        ], option => option === 'Plan a route' ? beginRoutePlanning() : answerAssistantQuestion(option));
+        input.disabled = false;
+    }
+
+    async function beginRoutePlanning() {
+        navContext = { currentLocation: null, floor: null, destination: null };
+        await botSay('Where are you starting from?', 400);
+        showReplies(['Main Building', 'Cafeteria', 'Basketball Court', 'Parking Lot', 'Gate / Guardhouse'], async location => {
+            navContext.currentLocation = location;
+            showSamplePreview(location);
+            mapLocationName.textContent = location;
+            mapLocationDescription.textContent = `Sample view for ${location}. Choose a destination to get a route.`;
+            mapStatus.innerHTML = '<i class="fa-solid fa-circle"></i> Starting area selected';
+            if (location === 'Main Building') {
+                await botSay('Which floor are you on?', 400);
+                showReplies(['1st Floor', '2nd Floor', '3rd Floor', '4th Floor', '5th Floor'], async floor => {
+                    navContext.floor = floor;
+                    await askDestination();
+                });
+                return;
+            }
+            await askDestination();
+        });
     }
 
     // ── Start ──
@@ -315,7 +396,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (navContext && navContext.directions) {
             // Continue from landing page context
-            await botSay(`Here are your directions to <strong>${navContext.destination}</strong>:`, 600);
+            await botSay(`Here are your directions to <strong>${escapeHtml(navContext.destination)}</strong>:`, 600);
             await new Promise(r => setTimeout(r, 400));
             appendMsg(navContext.directions, 'bot');
             drawRoute(navContext);
@@ -323,31 +404,15 @@ document.addEventListener('DOMContentLoaded', () => {
             await botSay('Did you find what you were looking for?', 600);
             showReplies(['Yes, I found it! 👍', 'No, I need more help'], handleDoneCheck);
         } else {
-            // Fresh start — no context
             await botSay('👋 Welcome to ACLC Fatima Campus Navigation!', 500);
-            await botSay('The full 3D navigation is coming soon. For now I can give you text directions. Where are you currently located?', 1000);
+            await botSay('Ask me about campus locations, directions, today’s events, or the demo teacher and student profiles. Common campus answers use local data and work without internet.', 700);
             showReplies([
-                'Main Building',
-                'Cafeteria',
-                'Basketball Court',
-                'Parking Lot',
-                'Gate / Guardhouse'
-            ], async (loc) => {
-                navContext = { currentLocation: loc, floor: null, destination: null };
-                showSamplePreview(loc);
-                mapLocationName.textContent = loc;
-                mapLocationDescription.textContent = `Sample view for ${loc}. Choose a destination to get a route.`;
-                mapStatus.innerHTML = '<i class="fa-solid fa-circle"></i> Starting area selected';
-                if (loc === 'Main Building') {
-                    await botSay('Which floor are you on?', 700);
-                    showReplies(['1st Floor','2nd Floor','3rd Floor','4th Floor','5th Floor'], async (floor) => {
-                        navContext.floor = floor;
-                        await askDestination();
-                    });
-                } else {
-                    await askDestination();
-                }
-            });
+                'Where is the Library?',
+                'Find teacher Alex Demo',
+                'Find test student Jamie Demo',
+                'What events are today?',
+                'Plan a route'
+            ], option => option === 'Plan a route' ? beginRoutePlanning() : answerAssistantQuestion(option));
         }
 
         input.disabled = false;
@@ -409,6 +474,8 @@ document.addEventListener('DOMContentLoaded', () => {
             await new Promise(r => setTimeout(r, 800));
             await botSay('Did you find what you were looking for?', 600);
             showReplies(['Yes, I found it! 👍', 'No, I need more help'], handleDoneCheck);
+        } else {
+            await answerAssistantQuestion(text);
         }
 
         input.disabled = false;

@@ -14,14 +14,26 @@ try {
     seedEventAttendees($pdo);
     $stmt = $pdo->prepare("SELECT r.id AS event_id, r.event_name, r.date_of_use, r.time_start, r.time_end,
             r.target_course, r.target_department, v.name AS venue_name, u.full_name AS host_name,
-            ea.qr_token, ea.attendance_status, ea.checked_in_at
-        FROM event_attendees ea
-        JOIN reservations r ON r.id = ea.reservation_id
+            COALESCE(ea.qr_token, q.qr_token) AS qr_token,
+            COALESCE(ea.attendance_status, 'not_registered') AS attendance_status,
+            ea.checked_in_at, (ea.id IS NOT NULL) AS is_attendee,
+            student.full_name AS student_name, student.user_id AS student_usn,
+            student.section, student.course AS program, student.adviser, student.id_photo,
+            EXISTS (SELECT 1 FROM event_scan_authorizations a WHERE a.reservation_id = r.id AND a.user_id = ?) AS can_scan
+        FROM reservations r
         JOIN venues v ON v.id = r.venue_id
         JOIN users u ON u.id = r.teacher_id
-        WHERE ea.user_id = ? AND r.status = 'approved'
+        JOIN user_qr_codes q ON q.user_id = ?
+        LEFT JOIN event_attendees ea ON ea.reservation_id = r.id AND ea.user_id = ?
+        LEFT JOIN users student ON student.id = ea.user_id
+        WHERE r.status = 'approved'
+          AND (ea.id IS NOT NULL OR EXISTS (
+              SELECT 1 FROM event_scan_authorizations a WHERE a.reservation_id = r.id AND a.user_id = ?
+          ))
         ORDER BY r.date_of_use DESC, r.time_start DESC");
-    $stmt->execute([$_SESSION['user_id']]);
+    ensureUserQrCode($pdo, (int) $_SESSION['user_id']);
+    $userId = (int) $_SESSION['user_id'];
+    $stmt->execute([$userId, $userId, $userId, $userId]);
     $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $now = new DateTimeImmutable();
 
@@ -45,5 +57,5 @@ try {
     echo json_encode(['success' => true, 'data' => $events]);
 } catch (Throwable $e) {
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Unable to load event history. Run the event attendance database migration first.']);
+    echo json_encode(['success' => false, 'message' => 'Unable to load event history. Apply the event attendance and QR authorization migrations first.']);
 }

@@ -42,11 +42,13 @@
         }
         const overlay = document.createElement('div');
         overlay.className = 'modal-overlay active scanner-overlay';
-        overlay.innerHTML = `<div class="modal-box scanner-box"><button type="button" class="modal-close scanner-close"><i class="fa-solid fa-xmark"></i></button><h2 class="modal-title">Scan attendee QR</h2><p class="modal-subtitle">Allow camera access and scan a student event QR code.</p><div id="eventQrReader"></div><div class="modal-error scanner-message" role="status"></div></div>`;
+        overlay.innerHTML = `<div class="modal-box scanner-box"><button type="button" class="modal-close scanner-close"><i class="fa-solid fa-xmark"></i></button><h2 class="modal-title">Scan attendee QR</h2><p class="modal-subtitle">Allow camera access and scan the student’s personal or event QR code.</p><div id="eventQrReader"></div><div class="modal-error scanner-message" role="status"></div></div>`;
         document.body.appendChild(overlay);
         document.body.style.overflow = 'hidden';
         const scanner = new Html5Qrcode('eventQrReader');
         let stopped = false;
+        let submitting = false;
+        let completed = false;
         const close = async () => {
             if (stopped) return;
             stopped = true;
@@ -58,23 +60,50 @@
         overlay.querySelector('.scanner-close').addEventListener('click', close);
         overlay.addEventListener('click', event => { if (event.target === overlay) close(); });
         scanner.start({ facingMode: 'environment' }, { fps: 10, qrbox: { width: 240, height: 240 } }, async decoded => {
-            if (stopped) return;
+            if (stopped || submitting || completed) return;
+            submitting = true;
             const form = new FormData();
             form.append('token', decoded.trim());
+            form.append('event_id', eventId);
             try {
                 const response = await fetch('auth/scan_event_qr.php', { method: 'POST', body: form });
                 const data = await response.json();
                 const status = overlay.querySelector('.scanner-message');
                 status.textContent = data.message || 'Attendance scan complete.';
                 status.classList.add('visible');
+                if (data.details) {
+                    const details = data.details;
+                    const detailCard = document.createElement('section');
+                    detailCard.className = 'scan-attendee-details';
+                    const dateTime = value => new Date(value).toLocaleString('en-PH');
+                    detailCard.innerHTML = `<h3>${escapeHtml(details.full_name)}</h3>
+                        ${details.id_photo ? `<img class="scan-id-photo" src="${escapeHtml(details.id_photo)}" alt="ID photo of ${escapeHtml(details.full_name)}">` : '<p class="scan-no-photo">No ID photo on file.</p>'}
+                        <dl><dt>USN</dt><dd>${escapeHtml(details.usn)}</dd>
+                        <dt>Section</dt><dd>${escapeHtml(details.section || '—')}</dd>
+                        <dt>Program</dt><dd>${escapeHtml(details.program || '—')}</dd>
+                        <dt>Adviser</dt><dd>${escapeHtml(details.adviser || '—')}</dd>
+                        <dt>Event</dt><dd>${escapeHtml(details.event_name)}</dd>
+                        <dt>Validity period</dt><dd>${escapeHtml(dateTime(details.valid_from))} – ${escapeHtml(dateTime(details.valid_until))}</dd></dl>`;
+                    const previousDetails = overlay.querySelector('.scan-attendee-details');
+                    if (previousDetails) previousDetails.replaceWith(detailCard);
+                    else overlay.querySelector('.scanner-box').appendChild(detailCard);
+                }
                 if (data.success) {
-                    await close();
+                    completed = true;
+                    try {
+                        await scanner.stop();
+                    } catch {
+                        status.textContent += ' Close the scanner manually if the camera stays on.';
+                    }
+                    overlay.querySelector('#eventQrReader').hidden = true;
                     await showRoster(eventId, host);
                 }
             } catch {
                 const status = overlay.querySelector('.scanner-message');
                 status.textContent = 'Could not submit the check-in. Try again.';
                 status.classList.add('visible');
+            } finally {
+                submitting = false;
             }
         }, () => {}).catch(error => {
             const status = overlay.querySelector('.scanner-message');
@@ -100,7 +129,7 @@
         const audience = event.target_course || event.target_department || 'All students';
         const searchText = `${event.event_name} ${event.venue_name} ${event.target_course || ''} ${event.target_department || ''} ${event.host_name || ''}`.toLowerCase();
         const attendanceActions = event.status === 'approved'
-            ? `<button class="action-btn" data-roster="${eventId}"><i class="fa-solid fa-users"></i> View attendance</button>${category === 'ongoing' ? `<button class="action-btn primary-scan-btn" data-scan="${eventId}"><i class="fa-solid fa-qrcode"></i> Scan QR</button>` : ''}`
+            ? `${Number(event.can_manage_scanners) ? `<button class="action-btn" data-manage-scanners="${eventId}"><i class="fa-solid fa-user-shield"></i> Manage scanners</button>` : ''}<button class="action-btn" data-roster="${eventId}"><i class="fa-solid fa-users"></i> View attendance</button>${category === 'ongoing' && Number(event.can_scan) ? `<button class="action-btn primary-scan-btn" data-scan="${eventId}"><i class="fa-solid fa-camera"></i> Scan QR</button>` : ''}`
             : '';
         const rejection = event.status === 'rejected'
             ? `<div class="event-rejection-reason"><strong>Reason</strong><span>${escapeHtml(event.rejection_reason || 'No reason provided.')}</span></div>`
@@ -114,6 +143,7 @@
             <span class="hosted-event-date">${escapeHtml(dateLabel(event.date_of_use))}<br>${escapeHtml(timeLabel(event.time_start))} – ${escapeHtml(timeLabel(event.time_end))}</span></div>
             ${attendanceStats}${rejection}
             ${attendanceActions ? `<div class="hosted-event-actions">${attendanceActions}</div><div class="hosted-event-roster" id="event-roster-${eventId}" hidden></div>` : ''}
+            ${Number(event.can_manage_scanners) && event.status === 'approved' ? `<div class="hosted-event-scanners" id="event-scanners-${eventId}" hidden></div>` : ''}
         </article>`;
     }
 
@@ -165,6 +195,11 @@
                     roster.hidden = false;
                     openScanner(button.dataset.scan, roster);
                 }));
+                list.querySelectorAll('[data-manage-scanners]').forEach(button => button.addEventListener('click', () => {
+                    const panel = list.querySelector(`#event-scanners-${button.dataset.manageScanners}`);
+                    panel.hidden = !panel.hidden;
+                    if (!panel.hidden) showScannerAuthorizations(button.dataset.manageScanners, panel);
+                }));
             };
 
             categorySelect.addEventListener('change', () => {
@@ -181,5 +216,43 @@
         }
     }
 
-    window.EventTools = { renderEvents, showRoster };
+    async function showScannerAuthorizations(eventId, host) {
+        host.innerHTML = '<div class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i><span>Loading authorized scanners…</span></div>';
+        try {
+            const response = await fetch(`auth/event_scan_authorizations.php?event_id=${encodeURIComponent(eventId)}`);
+            const data = await response.json();
+            if (!response.ok || !data.success) throw new Error(data.message || 'Could not load scanner access.');
+            const options = data.eligible.map(person => `<option value="${Number(person.id)}">${escapeHtml(person.full_name)} · ${escapeHtml(person.role)} · ${escapeHtml(person.user_id)}</option>`).join('');
+            host.innerHTML = `<section class="scanner-access-panel"><h4>Authorized event scanners</h4>
+                ${options ? `<form class="scanner-access-form"><select name="user_id" required><option value="">Choose a student or teacher</option>${options}</select><button class="action-btn" type="submit"><i class="fa-solid fa-user-plus"></i> Add scanner</button></form>` : '<p>No other active student or teacher accounts are available.</p>'}
+                ${data.authorized.length ? `<ul>${data.authorized.map(person => `<li>${escapeHtml(person.full_name)} <span>${escapeHtml(person.role)} · ${escapeHtml(person.user_id)}</span><button type="button" class="action-btn" data-remove-scanner="${Number(person.id)}">Remove</button></li>`).join('')}</ul>` : '<p>No additional scanners authorized.</p>'}</section>`;
+            const submit = host.querySelector('.scanner-access-form');
+            if (submit) submit.addEventListener('submit', async event => {
+                event.preventDefault();
+                await updateScannerAuthorization(eventId, submit.elements.user_id.value, 'add', host);
+            });
+            host.querySelectorAll('[data-remove-scanner]').forEach(button => button.addEventListener('click', async () => {
+                await updateScannerAuthorization(eventId, button.dataset.removeScanner, 'remove', host);
+            }));
+        } catch (error) {
+            host.innerHTML = `<div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i><span>${escapeHtml(error.message)}</span></div>`;
+        }
+    }
+
+    async function updateScannerAuthorization(eventId, userId, action, host) {
+        const form = new FormData();
+        form.append('event_id', eventId);
+        form.append('user_id', userId);
+        form.append('action', action);
+        try {
+            const response = await fetch('auth/event_scan_authorizations.php', { method: 'POST', body: form });
+            const data = await response.json();
+            if (!response.ok || !data.success) throw new Error(data.message || 'Could not update scanner access.');
+            await showScannerAuthorizations(eventId, host);
+        } catch (error) {
+            host.insertAdjacentHTML('afterbegin', `<p class="scanner-access-error">${escapeHtml(error.message)}</p>`);
+        }
+    }
+
+    window.EventTools = { renderEvents, showRoster, openScanner };
 })();

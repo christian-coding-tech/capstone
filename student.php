@@ -17,6 +17,7 @@ $student_name = $_SESSION['user_name'];
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/teacher.css">
     <link rel="stylesheet" href="css/dashboard-polish.css">
+    <link rel="stylesheet" href="css/action-loading.css">
     <title>Student Dashboard — ACLC Fatima</title>
 </head>
 <body>
@@ -55,6 +56,10 @@ $student_name = $_SESSION['user_name'];
             <div class="dashboard-hero-actions">
                 <a class="dashboard-shortcut primary" href="navigation.php#campusEventsTitle"><i class="fa-solid fa-calendar-days"></i> Events calendar</a>
                 <a class="dashboard-shortcut" href="index.php"><i class="fa-solid fa-house"></i> Landing page</a>
+            </div>
+            <div class="student-account-qr">
+                <div><strong>My student ID QR</strong><span>Show this personal code to an authorized event scanner.</span></div>
+                <div id="accountQrCode" class="account-qr-code" aria-live="polite">Loading QR…</div>
             </div>
         </section>
         <div class="tabs-wrapper" id="eventHistory">
@@ -105,7 +110,19 @@ $student_name = $_SESSION['user_name'];
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+    <script src="js/event-tools.js"></script>
     <script src="js/student-events.js"></script>
     <script src="js/account-notifications.js"></script>
+    <div class="action-loader" id="actionLoader" role="status" aria-live="polite" aria-hidden="true">
+        <div class="action-loader-card">
+            <div class="action-loader-spinner" aria-hidden="true"></div>
+            <div class="action-loader-copy">
+                <p class="action-loader-title">Please wait</p>
+                <p class="action-loader-caption" id="actionLoaderCaption">Working…</p>
+            </div>
+        </div>
+    </div>
+    <script src="js/action-loading.js"></script>
 </body>
 </html>

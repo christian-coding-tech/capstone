@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css\login.css">
+    <link rel="stylesheet" href="css/action-loading.css">
     <title>ACLC Fatima Campus</title>
 </head>
 <body>
@@ -191,6 +192,16 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="js/model_viewer.js"></script>
+    <div class="action-loader" id="actionLoader" role="status" aria-live="polite" aria-hidden="true">
+        <div class="action-loader-card">
+            <div class="action-loader-spinner" aria-hidden="true"></div>
+            <div class="action-loader-copy">
+                <p class="action-loader-title">Please wait</p>
+                <p class="action-loader-caption" id="actionLoaderCaption">Working…</p>
+            </div>
+        </div>
+    </div>
+    <script src="js/action-loading.js"></script>
     <script src="js/login.js"></script>
 </body>
 </html>

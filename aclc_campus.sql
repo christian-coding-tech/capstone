@@ -232,11 +232,43 @@ CREATE TABLE `users` (
   `role` enum('admin','teacher','student') NOT NULL,
   `email` varchar(100) DEFAULT NULL,
   `course` varchar(100) DEFAULT NULL,
+  `section` varchar(100) DEFAULT NULL,
+  `adviser` varchar(100) DEFAULT NULL,
+  `id_photo` varchar(255) DEFAULT NULL,
   `department` varchar(100) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `status` enum('inactive','active','deactivated') DEFAULT 'active',
   `pending_email` varchar(100) DEFAULT NULL,
   `deactivation_reason` enum('graduated','transferred','deactivated') DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Table structure for table `user_qr_codes`
+--
+
+CREATE TABLE `user_qr_codes` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `qr_token` char(64) NOT NULL,
+  `image_data` mediumtext DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_user_qr` (`user_id`),
+  UNIQUE KEY `unique_user_qr_token` (`qr_token`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Table structure for table `event_scan_authorizations`
+--
+
+CREATE TABLE `event_scan_authorizations` (
+  `reservation_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `granted_by` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`reservation_id`,`user_id`),
+  KEY `scan_authorization_user` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -443,6 +475,14 @@ ALTER TABLE `reservations`
 --
 ALTER TABLE `schedules`
   ADD CONSTRAINT `schedules_ibfk_1` FOREIGN KEY (`teacher_id`) REFERENCES `users` (`id`);
+
+ALTER TABLE `user_qr_codes`
+  ADD CONSTRAINT `user_qr_codes_user_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+ALTER TABLE `event_scan_authorizations`
+  ADD CONSTRAINT `scan_authorization_event_fk` FOREIGN KEY (`reservation_id`) REFERENCES `reservations` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `scan_authorization_user_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `scan_authorization_granter_fk` FOREIGN KEY (`granted_by`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

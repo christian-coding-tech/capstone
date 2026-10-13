@@ -20,7 +20,12 @@ try {
             SUM(ea.attendance_status = 'registered') AS registered_count,
             SUM(ea.attendance_status = 'absent') AS absent_count,
             SUM(ea.attendance_status = 'unavailable') AS unavailable_count,
-            SUM(ea.attendance_status = 'registered') AS not_checked_in_count
+            SUM(ea.attendance_status = 'registered') AS not_checked_in_count,
+            (r.teacher_id = ?) AS can_manage_scanners,
+            (r.teacher_id = ? OR EXISTS (
+                SELECT 1 FROM event_scan_authorizations a
+                WHERE a.reservation_id = r.id AND a.user_id = ?
+            )) AS can_scan
         FROM reservations r
         JOIN venues v ON v.id = r.venue_id
         JOIN users u ON u.id = r.teacher_id
@@ -28,8 +33,16 @@ try {
         WHERE r.status IN ('approved', 'rejected')";
     $params = [];
     if ($_SESSION['role'] === 'teacher') {
-        $sql .= ' AND r.teacher_id = ?';
-        $params[] = $_SESSION['user_id'];
+        $userId = (int) $_SESSION['user_id'];
+        $params = [$userId, $userId, $userId];
+        $sql .= ' AND (r.teacher_id = ? OR EXISTS (
+            SELECT 1 FROM event_scan_authorizations a
+            WHERE a.reservation_id = r.id AND a.user_id = ?
+        ))';
+        $params[] = $userId;
+        $params[] = $userId;
+    } else {
+        $params = [0, 0, 0];
     }
     $sql .= ' GROUP BY r.id ORDER BY r.date_of_use DESC, r.time_start DESC';
     $stmt = $pdo->prepare($sql);

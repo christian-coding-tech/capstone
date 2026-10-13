@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../db/connection.php';
+require_once 'event_helpers.php';
 header('Content-Type: application/json');
 
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
@@ -14,7 +15,7 @@ $action = trim($_POST['action'] ?? $_GET['action'] ?? '');
 if ($action === 'get') {
     $search = trim($_GET['search'] ?? '');
     $query  = "
-        SELECT id, user_id, full_name, email, course, department, status, deactivation_reason, created_at
+        SELECT id, user_id, full_name, email, course, section, adviser, id_photo, department, status, deactivation_reason, created_at
         FROM users WHERE role = 'student'
     ";
     $params = [];
@@ -36,6 +37,8 @@ if ($action === 'add') {
     $user_id   = trim($_POST['user_id']   ?? '');
     $email     = trim($_POST['email']     ?? '');
     $course    = trim($_POST['course']    ?? '');
+    $section   = trim($_POST['section'] ?? '');
+    $adviser   = trim($_POST['adviser'] ?? '');
     $department = trim($_POST['department'] ?? '');
     $password  = trim($_POST['password']  ?? '');
 
@@ -51,12 +54,47 @@ if ($action === 'add') {
         exit;
     }
 
-    $stmt   = $pdo->prepare("
-        INSERT INTO users (user_id, password, full_name, role, email, course, department, status)
-        VALUES (?, ?, ?, 'student', ?, ?, ?, 'inactive')
-    ");
-    $stmt->execute([$user_id, $password, $full_name, $email ?: null, $course ?: null, $department ?: null]);
-    echo json_encode(['success' => true, 'message' => 'Student account created. Activate it to allow login.']);
+    $photoPath = null;
+    if (isset($_FILES['id_photo']) && $_FILES['id_photo']['error'] !== UPLOAD_ERR_NO_FILE) {
+        $photo = $_FILES['id_photo'];
+        if ($photo['error'] !== UPLOAD_ERR_OK || $photo['size'] > 5 * 1024 * 1024) {
+            echo json_encode(['success' => false, 'message' => 'ID photo upload failed or exceeds 5MB.']);
+            exit;
+        }
+        $mime = (new finfo(FILEINFO_MIME_TYPE))->file($photo['tmp_name']);
+        $extensions = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
+        if (!isset($extensions[$mime])) {
+            echo json_encode(['success' => false, 'message' => 'ID photo must be a JPG, PNG, or WebP image.']);
+            exit;
+        }
+        $directory = dirname(__DIR__) . '/uploads/id_photos';
+        if (!is_dir($directory) && !mkdir($directory, 0755, true) && !is_dir($directory)) {
+            throw new RuntimeException('Unable to create the ID photo directory.');
+        }
+        $filename = bin2hex(random_bytes(16)) . '.' . $extensions[$mime];
+        if (!move_uploaded_file($photo['tmp_name'], $directory . '/' . $filename)) {
+            throw new RuntimeException('Unable to save the ID photo.');
+        }
+        $photoPath = 'uploads/id_photos/' . $filename;
+    }
+
+    $pdo->beginTransaction();
+    try {
+        $stmt = $pdo->prepare("
+            INSERT INTO users (user_id, password, full_name, role, email, course, section, adviser, id_photo, department, status)
+            VALUES (?, ?, ?, 'student', ?, ?, ?, ?, ?, ?, 'inactive')
+        ");
+        $stmt->execute([$user_id, $password, $full_name, $email ?: null, $course ?: null, $section ?: null, $adviser ?: null, $photoPath, $department ?: null]);
+        ensureUserQrCode($pdo, (int) $pdo->lastInsertId());
+        $pdo->commit();
+    } catch (Throwable $e) {
+        $pdo->rollBack();
+        if ($photoPath !== null && is_file(dirname(__DIR__) . '/' . $photoPath)) {
+            unlink(dirname(__DIR__) . '/' . $photoPath);
+        }
+        throw $e;
+    }
+    echo json_encode(['success' => true, 'message' => 'Student account created with its own QR code. Activate it to allow login.']);
     exit;
 }
 
@@ -107,10 +145,11 @@ if ($action === 'csv_confirm') {
         if ($check->fetch()) { $skipped++; continue; }
 
         $stmt = $pdo->prepare("
-            INSERT INTO users (user_id, password, full_name, role, email, course, department, status)
-                VALUES (?, ?, ?, 'student', ?, ?, ?, 'inactive')
+            INSERT INTO users (user_id, password, full_name, role, email, course, section, adviser, department, status)
+                VALUES (?, ?, ?, 'student', ?, ?, ?, ?, ?, 'inactive')
         ");
-            $stmt->execute([$acc['user_id'], $defaultPassword, $acc['full_name'], $acc['email'] ?: null, trim($acc['course'] ?? '') ?: null, trim($acc['department'] ?? '') ?: null]);
+        $stmt->execute([$acc['user_id'], $defaultPassword, $acc['full_name'], $acc['email'] ?: null, trim($acc['course'] ?? '') ?: null, trim($acc['section'] ?? '') ?: null, trim($acc['adviser'] ?? '') ?: null, trim($acc['department'] ?? '') ?: null]);
+        ensureUserQrCode($pdo, (int) $pdo->lastInsertId());
         $created++;
     }
 

@@ -277,6 +277,31 @@ body::before {
 .event-qr-wrap { display: flex; align-items: center; gap: 15px; margin-top: 18px; padding: 14px; width: fit-content; border: 1px solid var(--portal-line); border-radius: 15px; background: rgba(255,255,255,0.96); }
 .event-qr-wrap > span { max-width: 170px; color: #31506e; font-size: 0.76rem; line-height: 1.5; }
 .event-qr { display: grid; min-width: 144px; min-height: 144px; place-items: center; }
+.event-qr-archived { opacity: 0.72; filter: grayscale(0.65); }
+.event-qr-archived .event-qr { pointer-events: none; user-select: none; }
+.event-pass-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px 14px; margin-top: 14px; color: var(--portal-muted); font-size: 0.8rem; }
+.event-pass-details strong { color: var(--portal-text); }
+.event-pass-photo { grid-row: span 3; width: 96px; height: 116px; border-radius: 10px; object-fit: cover; }
+.student-account-qr { display: flex; align-items: center; gap: 18px; padding: 14px; border: 1px solid var(--portal-line); border-radius: 16px; background: rgba(255,255,255,0.04); }
+.student-account-qr > div:first-child { display: grid; gap: 5px; }
+.student-account-qr strong { color: var(--portal-text); }
+.student-account-qr span { max-width: 210px; color: var(--portal-muted); font-size: 0.75rem; line-height: 1.5; }
+.account-qr-code { display: grid; width: 160px; min-height: 160px; place-items: center; padding: 8px; border-radius: 12px; background: #fff; color: #31506e; font-size: 0.75rem; text-align: center; }
+.account-qr-code canvas, .account-qr-code img { display: block; max-width: 100%; }
+.scan-attendee-details { margin-top: 16px; padding: 16px; border: 1px solid var(--portal-line); border-radius: 14px; background: rgba(255,255,255,0.04); }
+.scan-attendee-details h3 { margin: 0 0 12px; }
+.scan-id-photo { display: block; width: 120px; height: 140px; margin-bottom: 12px; border-radius: 10px; object-fit: cover; }
+.scan-attendee-details dl { display: grid; grid-template-columns: minmax(90px, 0.7fr) minmax(0, 1.3fr); gap: 8px 12px; margin: 0; font-size: 0.82rem; }
+.scan-attendee-details dt { color: var(--portal-muted); }
+.scan-attendee-details dd { margin: 0; overflow-wrap: anywhere; }
+.scanner-access-panel { margin-top: 12px; padding: 14px; border: 1px solid var(--portal-line); border-radius: 12px; }
+.scanner-access-panel h4 { margin: 0 0 12px; }
+.scanner-access-form, .scanner-access-panel li { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.scanner-access-form select { flex: 1 1 220px; min-width: 0; padding: 10px; border: 1px solid var(--portal-line); border-radius: 8px; background: #10243b; color: var(--portal-text); }
+.scanner-access-panel ul { display: grid; gap: 8px; padding: 0; list-style: none; }
+.scanner-access-panel li span { color: var(--portal-muted); font-size: 0.78rem; }
+.scanner-access-panel li .action-btn { margin-left: auto; }
+.scanner-access-error { color: #ff9b9b; }
 .unavailable-btn { margin-top: 14px; }
 .hosted-event-card { margin-bottom: 16px; padding: 22px; border: 1px solid var(--portal-line); border-radius: 20px; background: linear-gradient(145deg, rgba(16,35,59,0.92), rgba(10,24,43,0.92)); box-shadow: 0 12px 34px rgba(0,0,0,0.12); }
 .hosted-event-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
@@ -532,6 +557,8 @@ body::before {
     .cal-search input { min-width: 0; }
     .event-qr-wrap { max-width: 100%; }
     .event-qr-wrap > span { max-width: 100%; overflow-wrap: anywhere; }
+    .event-pass-details { grid-template-columns: minmax(0, 1fr); }
+    .event-pass-photo { grid-row: auto; }
     .modal-overlay { align-items: flex-start; overflow-y: auto; -webkit-overflow-scrolling: touch; }
     .modal-box { max-height: calc(100vh - 24px); margin: auto 0; }
 }
