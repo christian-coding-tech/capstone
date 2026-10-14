@@ -23,10 +23,11 @@
         <header class="page-header">
             <div>
                 <h1 class="login-title">ACLC Fatima Campus</h1>
-                <p class="login-subtitle">A modern portal for campus navigation and student feedback.</p>
+                <p class="login-subtitle">Explore campus, find events, and share feedback.</p>
             </div>
-            <button class="admin-link" id="loginToggle" aria-label="Login">
+            <button class="admin-link" id="loginToggle" aria-label="Sign in">
                 <i class="fa-solid fa-circle-user"></i>
+                <span>Sign in</span>
             </button>
         </header>
 
@@ -48,13 +49,13 @@
 
                 <div class="login-container">
                     <p class="login-kicker">Campus portal</p>
-                    <h2 class="login-heading">Find your way around campus.</h2>
-                    <p class="login-copy">Get guided directions, explore key facilities, and share feedback with the campus team.</p>
+                    <h2 class="login-heading">What would you like to do?</h2>
+                    <p class="login-copy">Find a place, explore campus events, or send us feedback.</p>
                     <a href="navigation.php" class="login-btn nav-btn" id="navBtn">
-                        <i class="fa-solid fa-location-dot"></i>Navigation
+                        <i class="fa-solid fa-location-dot"></i>Explore campus
                     </a>
                     <button class="login-btn feedback-btn" id="feedbackToggle">
-                        <i class="fa-solid fa-clipboard-check"></i>Feedback
+                        <i class="fa-solid fa-clipboard-check"></i>Send feedback
                     </button>
                     <div class="login-trust"><i class="fa-solid fa-shield-halved"></i><span>Built for ACLC Fatima Campus students and staff</span></div>
                 </div>
@@ -65,7 +66,7 @@
             <div class="overview-heading">
                 <div>
                     <p class="login-kicker">Your campus, at a glance</p>
-                    <h2 id="campusOverviewTitle">Everything you need to get started</h2>
+                    <h2 id="campusOverviewTitle">Quick links</h2>
                 </div>
                 <span class="overview-status"><i class="fa-solid fa-circle"></i> Portal online</span>
             </div>
@@ -98,6 +99,39 @@
                 <span><i class="fa-solid fa-basketball"></i> Activity Court</span>
                 <span><i class="fa-solid fa-utensils"></i> Cafeteria</span>
             </div>
+        </section>
+
+        <section class="update-log" aria-labelledby="updateLogTitle">
+            <div class="update-log-heading">
+                <div>
+                    <p class="login-kicker">Latest improvements</p>
+                    <h2 id="updateLogTitle">Update log</h2>
+                </div>
+                <span class="update-log-badge"><i class="fa-solid fa-sparkles"></i> Fresh for campus</span>
+            </div>
+            <ol class="update-log-list">
+                <li class="update-log-item">
+                    <span class="update-log-icon"><i class="fa-solid fa-mobile-screen-button"></i></span>
+                    <div>
+                        <h3>Better on mobile</h3>
+                        <p>The landing page and sign-in form adapt to smaller screens without sideways scrolling.</p>
+                    </div>
+                </li>
+                <li class="update-log-item">
+                    <span class="update-log-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+                    <div>
+                        <h3>Smoother experience</h3>
+                        <p>Subtle motion and clearer touch-friendly controls make the portal easier to explore.</p>
+                    </div>
+                </li>
+                <li class="update-log-item">
+                    <span class="update-log-icon"><i class="fa-solid fa-compass"></i></span>
+                    <div>
+                        <h3>Campus tools up front</h3>
+                        <p>Jump into navigation, campus highlights, and feedback right from the home page.</p>
+                    </div>
+                </li>
+            </ol>
         </section>
     </div>
 

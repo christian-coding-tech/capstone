@@ -86,7 +86,7 @@ body::before {
 }
 
 .background-shape {
-    position: absolute;
+    position: fixed;
     border-radius: 50%;
     filter: blur(72px);
     opacity: 0.55;
@@ -251,6 +251,97 @@ body::before {
 .overview-facts { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 18px; color: #86a8ca; font-size: 0.7rem; }
 .overview-facts span { display: inline-flex; align-items: center; gap: 6px; }
 .overview-facts i { color: #56d0ae; }
+
+.update-log {
+    margin-top: 18px;
+    padding: 24px 28px;
+    border: 1px solid rgba(25, 118, 200, 0.14);
+    border-radius: 24px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.92), rgba(237,247,255,0.88));
+    box-shadow: 0 22px 56px rgba(45, 101, 140, 0.1);
+    animation: fadeInUp 0.8s 0.2s ease both;
+}
+
+.update-log-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.update-log-heading h2 {
+    margin-top: 7px;
+    color: var(--landing-ink, #17324d);
+    font-size: 1.3rem;
+    letter-spacing: -0.02em;
+}
+
+.update-log-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 12px;
+    border: 1px solid #cce5f3;
+    border-radius: 999px;
+    background: #f4fbff;
+    color: #1976c8;
+    font-size: 0.7rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.update-log-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    padding: 0;
+    list-style: none;
+}
+
+.update-log-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid #dcecf6;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.76);
+    transition: transform 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease;
+}
+
+.update-log-item:hover {
+    transform: translateY(-3px);
+    border-color: #afd8ef;
+    box-shadow: 0 12px 28px rgba(45, 101, 140, 0.1);
+}
+
+.update-log-item > div { min-width: 0; }
+
+.update-log-icon {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    place-items: center;
+    border-radius: 11px;
+    background: #eaf6fd;
+    color: #1976c8;
+}
+
+.update-log-item h3 {
+    color: #214766;
+    font-size: 0.84rem;
+    line-height: 1.4;
+}
+
+.update-log-item p {
+    margin-top: 5px;
+    color: #607d98;
+    font-size: 0.72rem;
+    line-height: 1.55;
+}
 
 .model-frame {
     position: relative;
@@ -1184,6 +1275,22 @@ body::before {
     html,
     body { max-width: 100%; overflow-x: clip; }
 
+    .page-shell,
+    .login-card,
+    .content-wrapper,
+    .campus-overview,
+    .update-log,
+    .overview-heading,
+    .overview-card,
+    .update-log-heading,
+    .update-log-item { min-width: 0; max-width: 100%; }
+
+    .update-log { padding: 20px 16px; border-radius: 20px; }
+    .update-log-heading { align-items: flex-start; flex-direction: column; gap: 10px; }
+    .update-log-heading h2 { font-size: 1.15rem; }
+    .update-log-list { grid-template-columns: minmax(0, 1fr); }
+    .update-log-item { padding: 14px; }
+
     .modal-overlay {
         box-sizing: border-box;
         width: 100%;
@@ -1213,9 +1320,263 @@ body::before {
     .modal-form,
     .form-group,
     .password-wrap { min-width: 0; max-width: 100%; }
+    .modal-form { width: 100%; }
+    .form-group input,
+    .form-group textarea,
+    .form-group select { min-width: 0; }
     .modal-title,
     .modal-subtitle,
     .modal-error,
     .modal-success,
     .form-group label { overflow-wrap: anywhere; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .update-log,
+    .update-log-item { animation: none; transition: none; }
+}
+
+@media (max-width: 640px) {
+    html,
+    body {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: clip;
+    }
+
+    .page-shell {
+        width: 100%;
+        padding: 14px 14px 28px;
+    }
+
+    .page-header {
+        align-items: flex-start;
+        margin-bottom: 16px;
+        padding-right: 102px;
+    }
+
+    .page-header > div { min-width: 0; }
+
+    .login-title {
+        font-size: clamp(1.35rem, 6vw, 1.8rem);
+        letter-spacing: 0.04em;
+        line-height: 1.15;
+        overflow-wrap: normal;
+    }
+
+    .login-subtitle {
+        margin-top: 7px;
+        font-size: 0.84rem;
+        line-height: 1.5;
+    }
+
+    .admin-link {
+        display: inline-flex;
+        top: 0;
+        right: 0;
+        width: auto;
+        min-width: 90px;
+        height: 44px;
+        gap: 7px;
+        padding: 0 11px;
+        border-radius: 14px;
+        font-size: 1rem;
+    }
+
+    .admin-link span {
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0;
+    }
+
+    .login-card {
+        padding: 16px;
+        border-radius: 22px;
+    }
+
+    .content-wrapper { gap: 12px; }
+
+    .login-image,
+    .login-container {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .model-eyebrow {
+        margin: 0 0 8px;
+        font-size: 0.66rem;
+    }
+
+    .model-frame {
+        width: 100%;
+        height: clamp(190px, 58vw, 270px);
+        min-height: 0;
+        border-radius: 20px;
+    }
+
+    .model-preview {
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+        max-height: none;
+    }
+
+    .model-label {
+        left: 10px;
+        bottom: 62px;
+        max-width: calc(100% - 20px);
+        padding: 7px 10px;
+        font-size: 0.68rem;
+    }
+
+    .model-caption {
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 8px;
+        margin: 9px 2px 0;
+        font-size: 0.7rem;
+    }
+
+    .login-container {
+        gap: 10px;
+        padding: 8px 0 2px;
+    }
+
+    .login-heading {
+        margin-top: 6px;
+        font-size: clamp(1.45rem, 6vw, 1.85rem);
+        line-height: 1.16;
+        overflow-wrap: normal;
+    }
+
+    .login-copy {
+        margin: 8px 0 12px;
+        font-size: 0.88rem;
+        line-height: 1.55;
+    }
+
+    .login-btn {
+        width: 100%;
+        min-height: 48px;
+        padding: 13px 16px;
+        border-radius: 14px;
+        font-size: 0.9rem;
+    }
+
+    .login-trust {
+        margin-top: 2px;
+        font-size: 0.68rem;
+        color: #526f87;
+    }
+
+    .login-kicker,
+    .model-eyebrow { color: #2876a8; }
+
+    .login-heading { color: #17324d; }
+    .model-loading { color: #416784; }
+
+    .model-caption { color: #607d98; }
+    .model-caption strong { color: #214766; }
+
+    .campus-overview,
+    .update-log {
+        margin-top: 14px;
+        padding: 18px 16px;
+        border-radius: 18px;
+    }
+
+    .overview-heading,
+    .update-log-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .overview-heading h2,
+    .update-log-heading h2 { font-size: 1.1rem; }
+
+    .overview-status,
+    .update-log-badge { font-size: 0.72rem; }
+
+    .overview-grid,
+    .update-log-list { grid-template-columns: minmax(0, 1fr); }
+
+    .overview-card {
+        gap: 10px;
+        padding: 13px;
+        border-radius: 13px;
+    }
+
+    .overview-card strong { font-size: 0.86rem; }
+    .overview-card small { font-size: 0.78rem; line-height: 1.5; }
+    .overview-facts { gap: 8px 12px; margin-top: 14px; font-size: 0.73rem; }
+
+    .update-log-item {
+        gap: 10px;
+        padding: 13px;
+        border-radius: 14px;
+    }
+
+    .update-log-item h3 { font-size: 0.88rem; }
+    .update-log-item p { font-size: 0.78rem; }
+
+    .modal-overlay {
+        inset: 0;
+        width: 100%;
+        height: 100vh;
+        height: 100dvh;
+        min-height: 0;
+        align-items: center;
+        padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
+        overflow-x: clip;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    .modal-box {
+        width: 100%;
+        max-width: 420px;
+        max-height: calc(100dvh - 24px);
+        min-height: 0;
+        margin: auto 0;
+        padding: 26px 20px;
+        border-radius: 22px;
+        overflow-x: clip;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    .modal-form { gap: 14px; }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        width: 100%;
+        min-width: 0;
+        min-height: 46px;
+        padding: 11px 13px;
+        font-size: 16px;
+    }
+
+    .password-wrap input { padding-right: 44px; }
+    .submit-btn { min-height: 48px; }
+}
+
+@media (max-width: 380px) {
+    .page-shell { padding-right: 12px; padding-left: 12px; }
+    .page-header { padding-right: 96px; }
+    .admin-link { min-width: 86px; padding: 0 9px; }
+    .login-card { padding: 13px; }
+    .campus-overview,
+    .update-log { padding-right: 14px; padding-left: 14px; }
+    .overview-card { padding: 12px; }
+    .model-zoom-controls { gap: 3px; padding: 5px; }
+}
+
+@media (max-height: 520px) and (max-width: 640px) {
+    .modal-overlay { align-items: flex-start; }
+    .modal-box { margin-top: 0; padding-top: 20px; padding-bottom: 20px; }
+    .modal-subtitle { margin-bottom: 16px; }
+    .modal-form { gap: 10px; }
 }

@@ -23,10 +23,11 @@
         <header class="page-header">
             <div>
                 <h1 class="login-title">ACLC Fatima Campus</h1>
-                <p class="login-subtitle">A modern portal for campus navigation and student feedback.</p>
+                <p class="login-subtitle">Explore campus, find events, and share feedback.</p>
             </div>
-            <button class="admin-link" id="loginToggle" aria-label="Login">
+            <button class="admin-link" id="loginToggle" aria-label="Sign in">
                 <i class="fa-solid fa-circle-user"></i>
+                <span>Sign in</span>
             </button>
         </header>
 
@@ -42,10 +43,10 @@
 
                 <div class="login-container">
                     <button class="login-btn nav-btn" id="navBtn">
-                        <i class="fa-solid fa-location-dot"></i>Navigation
+                        <i class="fa-solid fa-location-dot"></i>Explore campus
                     </button>
                     <button class="login-btn feedback-btn" id="feedbackToggle">
-                        <i class="fa-solid fa-clipboard-check"></i>Feedback
+                        <i class="fa-solid fa-clipboard-check"></i>Send feedback
                     </button>
                 </div>
             </div>
