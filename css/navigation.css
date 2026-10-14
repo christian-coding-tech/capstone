@@ -1206,12 +1206,14 @@ body {
 }
 
 @media (max-width: 480px) {
-    .nav-bg-content { padding-top: 78px; padding-bottom: 130px; }
+    .nav-background { overflow: hidden; }
+    .nav-bg-content { width: calc(100% - 18px); padding-top: 78px; padding-bottom: 130px; }
     .coming-soon-badge { max-width: 100%; padding: 7px 12px; font-size: 0.68rem; letter-spacing: 0.06em; }
     .coming-soon-title { font-size: clamp(2rem, 9vw, 2.4rem); }
     .coming-soon-subtitle { overflow-wrap: anywhere; font-size: 0.88rem; }
-    .sample-map-heading { gap: 10px; }
-    .route-brief { min-width: 0; }
+    .sample-map-heading { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .route-brief { grid-template-columns: auto 1fr; min-width: 0; }
+    .route-brief-badge { grid-column: 2; justify-self: start; }
     .route-brief-content p { white-space: normal; overflow-wrap: anywhere; }
     .campus-guide-grid { grid-template-columns: 1fr; }
     .map-viewport { height: 280px; }
@@ -1221,6 +1223,16 @@ body {
     .public-calendar-toolbar strong { min-width: 120px; }
     .public-event-item { min-width: 0; align-items: flex-start; gap: 8px; }
     .public-event-item > div { min-width: 0; overflow-wrap: anywhere; }
+    .nav-chatbot-panel {
+        right: 10px;
+        left: 10px;
+        bottom: 10px;
+        width: auto;
+        max-width: none;
+        height: min(58vh, 420px);
+        border-radius: 16px;
+    }
+    .nav-chatbot-tab { right: 10px; bottom: 10px; }
 }
 
 @media (max-width: 360px) {
@@ -1251,7 +1263,8 @@ body {
     /* Ensure route brief and map text wrap safely */
     .route-brief-content strong { white-space: normal; }
     .route-brief-content p { white-space: normal; }
-    
+
+    
     /* small touch targets */
     .back-btn { padding: 8px 10px; font-size: 0.7rem; }
 }

@@ -753,27 +753,49 @@ body::before {
 }
 
 @media (max-width: 640px) {
-    .page-shell { padding: 18px 16px 32px; }
-    /* Reserve the column the absolutely positioned login button occupies so the
-       title cannot run underneath it, and keep the button flush to the header. */
-    .page-header { padding-right: 72px; }
-    .page-header > div { min-width: 0; }
-    .admin-link { top: 0; right: 0; width: 56px; height: 56px; }
+    body { overflow-x: hidden; }
+    .page-shell { padding: 16px 14px 30px; }
+    .page-header {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding-right: 0;
+    }
+    .page-header > div { width: 100%; min-width: 0; }
+    .admin-link {
+        position: static;
+        align-self: flex-end;
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        font-size: 1.2rem;
+    }
     .login-title { overflow-wrap: anywhere; letter-spacing: 0.08em; font-size: clamp(1.7rem, 7.2vw, 2.2rem); }
-    .login-subtitle { font-size: 0.95rem; }
+    .login-subtitle { margin-top: 10px; font-size: 0.92rem; }
+    .login-card { padding: 18px 16px 20px; border-radius: 22px; }
+    .content-wrapper { display: flex; flex-direction: column; gap: 18px; min-height: auto; }
+    .login-image, .login-container { width: 100%; }
+    .login-container { max-width: 100%; gap: 14px; }
+    .login-btn { width: 100%; padding: 16px 18px; font-size: 0.9rem; }
     .modal-overlay { padding: 12px; }
     .modal-box { padding: 32px 24px; }
-    /* The label and the zoom controls sit on the same bottom edge, so stack them. */
     .model-label { left: 12px; bottom: 64px; padding: 7px 12px; font-size: 0.72rem; }
     .model-zoom-controls { right: 12px; bottom: 12px; left: 12px; justify-content: space-between; }
     .model-zoom-controls .zoom-slider { flex: 1 1 auto; width: auto; min-width: 0; }
-    .model-frame { min-height: 330px; }
-    .model-preview { min-height: 360px; }
+    .model-frame { min-height: 220px; border-radius: 20px; }
+    .model-preview { min-height: 260px; }
     .model-caption { flex-direction: column; gap: 4px; }
     .campus-overview { padding: 20px 16px; border-radius: 20px; }
     .overview-heading { align-items: flex-start; flex-direction: column; gap: 10px; }
     .overview-heading h2 { font-size: 1.15rem; }
+    .overview-grid { grid-template-columns: 1fr; }
+    .overview-card { align-items: flex-start; }
+    .overview-card > span:nth-child(2) { width: 100%; }
     .overview-facts { gap: 9px 14px; }
+    .update-log { padding: 20px 16px; border-radius: 20px; }
+    .update-log-heading { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .update-log-list { grid-template-columns: 1fr; }
     .nav-close-btn { top: 16px; left: 16px; padding: 9px 14px; font-size: 0.82rem; }
 }
 
