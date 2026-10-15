@@ -88,9 +88,24 @@
     // Zoom controls
     let cameraZ = camera.position.z;
     let targetCameraZ = cameraZ;
-    // Allow closer zoom by reducing minCameraZ
-    const minCameraZ = 2.8;
-    const maxCameraZ = 14;
+    let minCameraZ = 2.8;
+    let maxCameraZ = 14;
+    let zoomSlider = null;
+
+    function clampCameraZ(distance) {
+        return Math.min(maxCameraZ, Math.max(minCameraZ, distance));
+    }
+
+    function syncZoomSlider() {
+        if (!zoomSlider) return;
+        const ratio = Math.log(maxCameraZ / clampCameraZ(targetCameraZ)) / Math.log(maxCameraZ / minCameraZ);
+        zoomSlider.value = String(Math.round(ratio * 100));
+    }
+
+    function setZoom(distance) {
+        targetCameraZ = clampCameraZ(distance);
+        syncZoomSlider();
+    }
 
     (function createZoomControls(){
         const frameEl = canvas.closest('.model-frame') || document.getElementById('modelFrame') || document.body;
@@ -104,12 +119,12 @@
         btnZoomOut.title = 'Zoom out';
         btnZoomOut.innerHTML = '<i class="fa-solid fa-minus"></i>';
 
-        const slider = document.createElement('input');
-        slider.type = 'range';
-        slider.min = '0';
-        slider.max = '100';
-        slider.value = '50';
-        slider.className = 'zoom-slider';
+        zoomSlider = document.createElement('input');
+        zoomSlider.type = 'range';
+        zoomSlider.min = '0';
+        zoomSlider.max = '100';
+        zoomSlider.value = '50';
+        zoomSlider.className = 'zoom-slider';
 
         const btnZoomIn = document.createElement('button');
         btnZoomIn.className = 'zoom-btn zoom-in';
@@ -117,24 +132,22 @@
         btnZoomIn.innerHTML = '<i class="fa-solid fa-plus"></i>';
 
         wrap.appendChild(btnZoomOut);
-        wrap.appendChild(slider);
+        wrap.appendChild(zoomSlider);
         wrap.appendChild(btnZoomIn);
         frameEl.appendChild(wrap);
 
         function setFromSlider() {
-            const t = slider.value / 100;
-            // inverse mapping: 0 => maxZ (far), 1 => minZ (close)
-            targetCameraZ = maxCameraZ - t * (maxCameraZ - minCameraZ);
+            const t = zoomSlider.value / 100;
+            // Logarithmic mapping keeps zoom responsive across differently sized models.
+            setZoom(maxCameraZ * Math.pow(minCameraZ / maxCameraZ, t));
         }
 
-        slider.addEventListener('input', setFromSlider);
+        zoomSlider.addEventListener('input', setFromSlider);
         btnZoomIn.addEventListener('click', () => {
-            targetCameraZ = Math.max(minCameraZ, targetCameraZ - 0.4);
-            slider.value = String(((maxCameraZ - targetCameraZ) / (maxCameraZ - minCameraZ)) * 100);
+            setZoom(targetCameraZ * 0.85);
         });
         btnZoomOut.addEventListener('click', () => {
-            targetCameraZ = Math.min(maxCameraZ, targetCameraZ + 0.4);
-            slider.value = String(((maxCameraZ - targetCameraZ) / (maxCameraZ - minCameraZ)) * 100);
+            setZoom(targetCameraZ / 0.85);
         });
 
         const reset = document.createElement('button');
@@ -144,8 +157,7 @@
         reset.innerHTML = '<i class="fa-solid fa-crosshairs"></i>';
         wrap.appendChild(reset);
         reset.addEventListener('click', () => {
-            targetCameraZ = defaultCameraZ;
-            slider.value = '50';
+            setZoom(defaultCameraZ);
             targetRotY = 0;
             baseRotY = 0;
             pointerOffsetRotY = 0;
@@ -154,9 +166,7 @@
         // wheel to zoom
         canvas.addEventListener('wheel', (ev) => {
             ev.preventDefault();
-            const delta = Math.sign(ev.deltaY);
-            targetCameraZ = Math.min(maxCameraZ, Math.max(minCameraZ, targetCameraZ + delta * 0.4));
-            slider.value = String(((maxCameraZ - targetCameraZ) / (maxCameraZ - minCameraZ)) * 100);
+            setZoom(targetCameraZ * Math.exp(Math.sign(ev.deltaY) * 0.12));
         }, { passive: false });
     })();
 
@@ -170,20 +180,23 @@
             const center = box.getCenter(new THREE.Vector3());
             const size   = box.getSize(new THREE.Vector3());
             const maxDim = Math.max(size.x, size.y, size.z);
-            const scale  = 8 / maxDim;
+            const scale  = 50 / maxDim;
 
             model.position.sub(center);
             model.scale.setScalar(scale);
 
             modelGroup.add(model);
-            modelGroup.position.set(0, 0, 0);
+            modelGroup.position.set(5, -5, 0);
 
             const fitDistance = (maxDim * scale) / (2 * Math.tan((camera.fov * Math.PI) / 360));
-            camera.position.z = Math.max(4.8, fitDistance * 0.92);
-            camera.lookAt(0, 0, 0);
-            cameraZ = camera.position.z;
+            minCameraZ = Math.max(0.5, fitDistance * 0.45);
+            maxCameraZ = Math.max(minCameraZ * 2, fitDistance * 3.5);
+            cameraZ = fitDistance * 1.1;
             targetCameraZ = cameraZ;
             defaultCameraZ = cameraZ;
+            camera.position.set(modelGroup.position.x, modelGroup.position.y + 0.8, modelGroup.position.z + cameraZ);
+            camera.lookAt(modelGroup.position);
+            syncZoomSlider();
 
             model.traverse(node => {
                 if (!node.isMesh) return;
@@ -294,7 +307,7 @@
         }
         // smooth camera zoom
         cameraZ = lerp(cameraZ, targetCameraZ, 0.12);
-        camera.position.z = cameraZ;
+        camera.position.z = modelGroup.position.z + cameraZ;
 
         renderer.render(scene, camera);
     }

@@ -944,3 +944,38 @@ body {
     .detail-row { grid-template-columns: minmax(0, 1fr); gap: 3px; }
     .detail-row span:last-child { text-align: left; }
 }
+.tabs-wrapper {
+  position: relative;
+}
+
+.tabs {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  white-space: nowrap;
+  gap: 6px;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-width: 680px) {
+  .tabs-wrapper {
+    margin-bottom: 22px;
+  }
+
+  .tab-btn {
+    padding: 9px 16px;
+    font-size: 0.86rem;
+  }
+
+  .date-filter {
+    width: 100%;
+  }
+
+  .date-filter input[type='date'] {
+    flex: 1 1 200px;
+  }
+}

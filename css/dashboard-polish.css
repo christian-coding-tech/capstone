@@ -608,3 +608,152 @@ body::before {
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
+
+@media (max-width: 1180px) {
+  .dashboard-main {
+    padding: 28px clamp(14px, 3vw, 34px) 90px;
+  }
+
+  .dashboard-hero {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+    padding: clamp(22px, 5vw, 32px);
+  }
+
+  .dashboard-hero::after {
+    right: -110px;
+    bottom: -170px;
+    opacity: 0.4;
+  }
+
+  .dashboard-hero-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .dashboard-shortcut {
+    flex: 1 1 240px;
+    justify-content: center;
+  }
+
+  .student-account-qr {
+    width: 100%;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .student-account-qr > div:first-child {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 880px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 12px clamp(16px, 4vw, 32px);
+  }
+
+  .header-right {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .header-right > * {
+    flex: 0 1 auto;
+  }
+
+  .logout-btn {
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 680px) {
+  .dashboard-main {
+    padding: 22px 14px 80px;
+  }
+
+  .dashboard-hero {
+    border-radius: 20px;
+  }
+
+  .dashboard-kpi-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+  }
+
+  .dashboard-panel {
+    border-radius: 20px;
+    padding: clamp(18px, 4vw, 24px);
+  }
+
+  .dashboard-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .dashboard-table-wrapper {
+    border-radius: 16px;
+  }
+
+  .dashboard-table {
+    min-width: 680px;
+  }
+
+  .dashboard-filter-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .dashboard-filter-group {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .dashboard-search {
+    flex: 1 1 100%;
+  }
+
+  .student-account-qr {
+    border-radius: 16px;
+    padding: 14px 16px;
+  }
+
+  .account-qr-code {
+    width: 128px;
+    height: 128px;
+  }
+}
+
+@media (max-width: 520px) {
+  .header-right {
+    justify-content: flex-start;
+  }
+
+  .logout-btn {
+    margin-left: 0;
+    order: 3;
+  }
+
+  .account-notifications {
+    order: 2;
+  }
+
+  .teacher-info,
+  .admin-info {
+    order: 1;
+    flex: 1 1 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-hero {
+    animation: none !important;
+  }
+}
