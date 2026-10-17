@@ -42,10 +42,13 @@
         }
         const overlay = document.createElement('div');
         overlay.className = 'modal-overlay active scanner-overlay';
-        overlay.innerHTML = `<div class="modal-box scanner-box"><button type="button" class="modal-close scanner-close"><i class="fa-solid fa-xmark"></i></button><h2 class="modal-title">Scan attendee QR</h2><p class="modal-subtitle">Allow camera access and scan the student’s personal or event QR code.</p><div id="eventQrReader"></div><div class="modal-error scanner-message" role="status"></div></div>`;
+        overlay.innerHTML = `<div class="modal-box scanner-box"><button type="button" class="modal-close scanner-close"><i class="fa-solid fa-xmark"></i></button><h2 class="modal-title">Scan attendee QR</h2><p class="modal-subtitle">Allow camera access and scan the student’s personal or event QR code.</p><div id="eventQrReader"></div><button type="button" class="action-btn scanner-photo-btn" hidden><i class="fa-solid fa-camera"></i> Use camera photo</button><input class="scanner-photo-input" type="file" accept="image/*" capture="environment"><div class="modal-error scanner-message" role="status"></div></div>`;
         document.body.appendChild(overlay);
         document.body.style.overflow = 'hidden';
+        document.body.classList.add('scanner-open');
         const scanner = new Html5Qrcode('eventQrReader');
+        const photoButton = overlay.querySelector('.scanner-photo-btn');
+        const photoInput = overlay.querySelector('.scanner-photo-input');
         let stopped = false;
         let submitting = false;
         let completed = false;
@@ -56,10 +59,11 @@
             scanner.clear();
             overlay.remove();
             document.body.style.overflow = '';
+            document.body.classList.remove('scanner-open');
         };
         overlay.querySelector('.scanner-close').addEventListener('click', close);
         overlay.addEventListener('click', event => { if (event.target === overlay) close(); });
-        scanner.start({ facingMode: 'environment' }, { fps: 10, qrbox: { width: 240, height: 240 } }, async decoded => {
+        const handleDecoded = async decoded => {
             if (stopped || submitting || completed) return;
             submitting = true;
             const form = new FormData();
@@ -105,10 +109,35 @@
             } finally {
                 submitting = false;
             }
-        }, () => {}).catch(error => {
+        };
+        photoButton.addEventListener('click', () => photoInput.click());
+        photoInput.addEventListener('change', async () => {
+            const image = photoInput.files?.[0];
+            if (!image) return;
             const status = overlay.querySelector('.scanner-message');
-            status.textContent = `Camera unavailable: ${error}`;
+            status.textContent = 'Reading QR from camera photo…';
             status.classList.add('visible');
+            try {
+                await handleDecoded(await scanner.scanFile(image, true));
+            } catch {
+                status.textContent = 'Could not read a QR code from that photo. Try again with the code in focus and fully visible.';
+                status.classList.add('visible');
+            } finally {
+                photoInput.value = '';
+            }
+        });
+        scanner.start({ facingMode: 'environment' }, { fps: 10, qrbox: { width: 240, height: 240 } }, handleDecoded, () => {}).catch(error => {
+            const status = overlay.querySelector('.scanner-message');
+            const cameraError = `${error?.name || ''} ${error?.message || error}`;
+            if (/NotAllowedError|PermissionDenied|permission/i.test(cameraError)) {
+                status.textContent = 'Camera permission was blocked. Allow camera access for this site in your browser settings, then retry. You can also use the camera photo option.';
+            } else if (/NotReadableError|Could not start video source|overlay|bubble|in use/i.test(cameraError)) {
+                status.textContent = 'Camera could not start. Close other apps using the camera and any floating bubbles, screen filters, or overlays, then retry. You can also use the camera photo option.';
+            } else {
+                status.textContent = `Live camera unavailable: ${error}. Check camera permission and use HTTPS, or try the camera photo option.`;
+            }
+            status.classList.add('visible');
+            photoButton.hidden = false;
         });
     }
 
@@ -119,6 +148,55 @@
         if (endsAt < now) return 'history';
         if (startsAt <= now) return 'ongoing';
         return 'hosted';
+    }
+
+    async function openAvailableScanner(host) {
+        try {
+            const response = await fetch('auth/hosted_events.php');
+            const data = await response.json();
+            if (!response.ok || !data.success) throw new Error(data.message || 'Unable to load scannable events.');
+
+            const now = new Date();
+            const eligible = data.data.filter(event => {
+                if (event.status !== 'approved' || !Number(event.can_scan)) return false;
+                const startsAt = new Date(`${event.date_of_use}T${event.time_start}`);
+                const endsAt = new Date(`${event.date_of_use}T${event.time_end}`);
+                return now >= new Date(startsAt.getTime() - 30 * 60 * 1000) && now <= endsAt;
+            });
+            if (!eligible.length) {
+                alert('There are no events available for QR attendance scanning right now.');
+                return;
+            }
+
+            const launch = event => {
+                host.hidden = false;
+                showRoster(event.event_id, host);
+                openScanner(event.event_id, host);
+            };
+            if (eligible.length === 1) {
+                launch(eligible[0]);
+                return;
+            }
+
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay active scanner-overlay';
+            overlay.innerHTML = `<div class="modal-box scanner-box"><button type="button" class="modal-close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button><h2 class="modal-title">Choose an event</h2><p class="modal-subtitle">Select which event to scan attendance for.</p><div class="hosted-event-actions">${eligible.map(event => `<button type="button" class="action-btn" data-event-scan="${Number(event.event_id)}"><i class="fa-solid fa-camera"></i> ${escapeHtml(event.event_name)} · ${escapeHtml(event.venue_name)}</button>`).join('')}</div></div>`;
+            document.body.appendChild(overlay);
+            document.body.style.overflow = 'hidden';
+            const close = () => {
+                overlay.remove();
+                document.body.style.overflow = '';
+            };
+            overlay.querySelector('.modal-close').addEventListener('click', close);
+            overlay.addEventListener('click', event => { if (event.target === overlay) close(); });
+            overlay.querySelectorAll('[data-event-scan]').forEach(button => button.addEventListener('click', () => {
+                const selected = eligible.find(event => Number(event.event_id) === Number(button.dataset.eventScan));
+                close();
+                if (selected) launch(selected);
+            }));
+        } catch (error) {
+            alert(error.message || 'Unable to open the QR scanner.');
+        }
     }
 
     function eventCard(event, category) {
@@ -254,5 +332,5 @@
         }
     }
 
-    window.EventTools = { renderEvents, showRoster, openScanner };
+    window.EventTools = { renderEvents, showRoster, openScanner, openAvailableScanner };
 })();

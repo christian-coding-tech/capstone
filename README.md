@@ -8,7 +8,7 @@ The system provides these main features:
 
 - Campus navigation with suggested assistant prompts, local answers for campus facilities and approved events, and a guided route planner.
 - Campus map previews, route markers, landmark selection, zooming, panning, and facility previews.
-- A local campus illustration preview and teacher/student profile placeholder for navigation testing. To replace the illustration with an approved campus photograph, place the photo at img/campus-photo.jpg (the page will use it automatically). Recommended dimensions: ~1600×900 or similar. The assistant's teacher and student profiles are clearly labeled fictional demo data.
+- A local campus illustration preview for navigation. Teacher and student directory lookups use active database accounts and are available only to signed-in teachers and administrators. To replace the illustration with an approved campus photograph, place the photo at img/campus-photo.jpg (the page will use it automatically). Recommended dimensions: ~1600×900 or similar.
 - Interactive 3D campus model on the landing page.
 - Student and teacher reservation workflows.
 - Course-targeted campus events, student event history, personal student QR codes, event QR attendance, and host attendance tracking.
@@ -43,7 +43,7 @@ css/                   Page stylesheets
 js/                    Page JavaScript
 img/                   Images and campus media
 ACLC3.glb              3D campus model
-aclc_campus.sql        Database schema and sample data
+aclc_campus.sql        Database schema with retained account and venue records
 ```
 
 ## Local Setup
@@ -60,6 +60,7 @@ aclc_campus.sql        Database schema and sample data
 
 ### Event attendance feature
 
+- Existing databases imported from an older starter dump may run `db/clean_seed_activity_migration.sql` once to remove only the exact sample feedback, reservation, and admin-state rows. It never deletes user accounts or venue records. Fresh imports already omit sample activity.
 - On an existing database, run `db/event_attendance_migration.sql` once before using the event features, followed by `db/event_qr_authorization_migration.sql` to add personal QR codes, student identity fields, and event scanner authorizations. A fresh database imported from `aclc_campus.sql` already has these tables; do not run either migration on top of that schema.
 - If `db/event_attendance_migration.sql` was already run before department notifications were added, run `db/department_notifications_migration.sql` once. Do not run it after importing the updated SQL dump.
 - Admins should populate student `course`, `section`, `adviser`, ID photo, and all-account `department` fields (or include the available fields in student CSV files). Reservations can target all students, one course, or a department.
@@ -71,7 +72,7 @@ aclc_campus.sql        Database schema and sample data
 - QR image generation and camera scanning use browser-loaded QR libraries; camera scanning requires HTTPS (or localhost) and camera permission.
 - A dedicated loading indicator appears only while signing in or out; regular page navigation does not show a system-wide blocking loader.
 
-Do not copy SQL statements into the database without reviewing them first. The SQL dump contains schema definitions and sample records.
+Do not copy SQL statements into the database without reviewing them first. The SQL dump contains schema definitions, retained user accounts, and campus venue records; activity tables start empty.
 
 ## Configuration and Secrets
 

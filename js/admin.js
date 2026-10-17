@@ -86,6 +86,24 @@ document.addEventListener('DOMContentLoaded', () => {
     function openModal(m)  { m.classList.add('active');    document.body.style.overflow = 'hidden'; }
     function closeModal(m) { m.classList.remove('active'); document.body.style.overflow = ''; }
 
+    async function readUploadResponse(response) {
+        const body = await response.text();
+        let data;
+        try {
+            data = JSON.parse(body);
+        } catch {
+            const plainBody = body.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+            if (response.status === 401 || /authentication|unauthorized|login required/i.test(plainBody)) {
+                throw new Error('Authentication required. Sign in again as an administrator, then retry the upload.');
+            }
+            throw new Error(`Upload server returned an unexpected response (HTTP ${response.status}).`);
+        }
+        if (response.status === 401 || data.message === 'Unauthorized.') {
+            throw new Error('Your administrator session has expired. Sign in again, then retry the upload.');
+        }
+        return data;
+    }
+
     function formatDate(s) {
         if (!s) return '—';
         const d = new Date(s + 'T00:00:00');
@@ -482,7 +500,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fd.append('action', 'add');
         try {
             const res  = await fetch('auth/manage_teachers.php', { method: 'POST', body: fd });
-            const data = await res.json();
+            const data = await readUploadResponse(res);
             if (data.success) {
                 addTeacherSuccess.textContent = data.message;
                 addTeacherSuccess.classList.add('visible');
@@ -527,10 +545,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!data.preview.length) { csvError.textContent = 'No valid rows found.'; csvError.classList.add('visible'); return; }
             csvPreview.innerHTML = buildCsvPreviewHtml(data.preview, 'teacher');
             document.getElementById('confirmCsvBtn').addEventListener('click', async () => {
-                await confirmCsv('auth/manage_teachers.php', data.preview, csvSuccess, csvError);
-                loadTeachers();
+                try {
+                    await confirmCsv('auth/manage_teachers.php', data.preview, csvSuccess, csvError);
+                    loadTeachers();
+                } catch (error) {
+                    csvError.textContent = error.message || 'Could not create accounts.';
+                    csvError.classList.add('visible');
+                }
             });
-        } catch { csvError.textContent = 'Something went wrong.'; csvError.classList.add('visible'); }
+        } catch (error) { csvError.textContent = error.message || 'Something went wrong.'; csvError.classList.add('visible'); }
         finally { csvSubmit.disabled = false; csvSubmit.querySelector('span').textContent = 'Preview Accounts'; }
     });
 
@@ -706,7 +729,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fd.append('action', 'add');
         try {
             const res  = await fetch('auth/manage_students.php', { method: 'POST', body: fd });
-            const data = await res.json();
+            const data = await readUploadResponse(res);
             if (data.success) {
                 addStudentSuccess.textContent = data.message;
                 addStudentSuccess.classList.add('visible');
@@ -716,8 +739,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 addStudentError.textContent = data.message;
                 addStudentError.classList.add('visible');
             }
-        } catch {
-            addStudentError.textContent = 'Something went wrong.';
+        } catch (error) {
+            addStudentError.textContent = error.message || 'Something went wrong.';
             addStudentError.classList.add('visible');
         } finally {
             addStudentSubmit.disabled = false;
@@ -746,15 +769,20 @@ document.addEventListener('DOMContentLoaded', () => {
         fd.append('csv_file', studentCsvFile.files[0]);
         try {
             const res  = await fetch('auth/manage_students.php', { method: 'POST', body: fd });
-            const data = await res.json();
+            const data = await readUploadResponse(res);
             if (!data.success) { studentCsvError.textContent = data.message; studentCsvError.classList.add('visible'); return; }
             if (!data.preview.length) { studentCsvError.textContent = 'No valid rows found.'; studentCsvError.classList.add('visible'); return; }
             studentCsvPreview.innerHTML = buildCsvPreviewHtml(data.preview, 'student');
             document.getElementById('confirmCsvBtn').addEventListener('click', async () => {
-                await confirmCsv('auth/manage_students.php', data.preview, studentCsvSuccess, studentCsvError);
-                loadStudents();
+                try {
+                    await confirmCsv('auth/manage_students.php', data.preview, studentCsvSuccess, studentCsvError);
+                    loadStudents();
+                } catch (error) {
+                    studentCsvError.textContent = error.message || 'Could not create accounts.';
+                    studentCsvError.classList.add('visible');
+                }
             });
-        } catch { studentCsvError.textContent = 'Something went wrong.'; studentCsvError.classList.add('visible'); }
+        } catch (error) { studentCsvError.textContent = error.message || 'Something went wrong.'; studentCsvError.classList.add('visible'); }
         finally { studentCsvSubmit.disabled = false; studentCsvSubmit.querySelector('span').textContent = 'Preview Accounts'; }
     });
 
@@ -784,7 +812,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fd.append('action', 'csv_confirm');
         fd.append('accounts', JSON.stringify(preview));
         const res  = await fetch(endpoint, { method: 'POST', body: fd });
-        const data = await res.json();
+        const data = await readUploadResponse(res);
         if (data.success) { successEl.textContent = data.message; successEl.classList.add('visible'); }
         else { errorEl.textContent = data.message; errorEl.classList.add('visible'); }
     }

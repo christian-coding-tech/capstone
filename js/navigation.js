@@ -247,6 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── Get context from landing page ──
     let navContext = null;
+    let pendingDirectoryRole = null;
     try {
         navContext = JSON.parse(sessionStorage.getItem('navContext') || 'null');
         sessionStorage.removeItem('navContext');
@@ -337,23 +338,16 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             const foundLocation = Object.entries(offlineLocations).find(([name]) => normalized.includes(name));
             if (foundLocation) return foundLocation[1];
-            if (normalized.includes('alex demo')) {
-                personName.textContent = 'Alex Demo';
-                personDetails.textContent = 'Teacher · Information Technology';
-                personPlaceholder.hidden = false;
-                return 'Temporary test profile (demo data, not a real campus account): Alex Demo, Information Technology; sample location: Faculty Room.';
+            if (/\b(teacher|student)\b/.test(normalized)) {
+                return 'The live campus directory is unavailable right now. Reconnect and try the account lookup again.';
             }
-            if (normalized.includes('jamie demo')) {
-                personName.textContent = 'Jamie Demo';
-                personDetails.textContent = 'Student · BSIT · BSIT Demo 1A';
-                personPlaceholder.hidden = false;
-                return 'Temporary test profile (demo data, not a real campus account): Jamie Demo, BSIT, BSIT Demo 1A; sample campus area: Main Building.';
-            }
-            return 'I can answer a few common campus questions offline. Try asking where the Registrar, Cashier, Faculty Room, Library, Computer Lab, or Admin Lounge is, or ask about the demo teacher Alex Demo or demo student Jamie Demo.';
+            return 'I can answer a few common campus questions offline. Try asking where the Registrar, Cashier, Faculty Room, Library, Computer Lab, or Admin Lounge is.';
         }
     }
 
     async function answerAssistantQuestion(question) {
+        const directoryRequest = question.match(/^find an active (teacher|student)$/i);
+        pendingDirectoryRole = directoryRequest ? directoryRequest[1].toLowerCase() : null;
         input.disabled = true;
         showTyping();
         const reply = await askNavAI(question, navContext || {});
@@ -361,8 +355,8 @@ document.addEventListener('DOMContentLoaded', () => {
         appendMsg(reply, 'bot');
         showReplies([
             'Where is the Library?',
-            'Find teacher Alex Demo',
-            'Find test student Jamie Demo',
+            'Find an active teacher',
+            'Find an active student',
             'What events are today?',
             'Plan a route'
         ], option => option === 'Plan a route' ? beginRoutePlanning() : answerAssistantQuestion(option));
@@ -405,11 +399,11 @@ document.addEventListener('DOMContentLoaded', () => {
             showReplies(['Yes, I found it! 👍', 'No, I need more help'], handleDoneCheck);
         } else {
             await botSay('👋 Welcome to ACLC Fatima Campus Navigation!', 500);
-            await botSay('Ask me about campus locations, directions, today’s events, or the demo teacher and student profiles. Common campus answers use local data and work without internet.', 700);
+            await botSay('Ask me about campus locations, directions, today’s events, or an active campus account. Common campus answers use local data and work without internet.', 700);
             showReplies([
                 'Where is the Library?',
-                'Find teacher Alex Demo',
-                'Find test student Jamie Demo',
+                'Find an active teacher',
+                'Find an active student',
                 'What events are today?',
                 'Plan a route'
             ], option => option === 'Plan a route' ? beginRoutePlanning() : answerAssistantQuestion(option));
@@ -475,7 +469,8 @@ document.addEventListener('DOMContentLoaded', () => {
             await botSay('Did you find what you were looking for?', 600);
             showReplies(['Yes, I found it! 👍', 'No, I need more help'], handleDoneCheck);
         } else {
-            await answerAssistantQuestion(text);
+            const question = pendingDirectoryRole ? `Find ${pendingDirectoryRole} ${text}` : text;
+            await answerAssistantQuestion(question);
         }
 
         input.disabled = false;

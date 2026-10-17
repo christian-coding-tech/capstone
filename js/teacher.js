@@ -192,6 +192,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    document.getElementById('teacherScanQr').addEventListener('click', () => {
+        EventTools.openAvailableScanner(document.getElementById('teacherScanRoster'));
+    });
+
     // ── Date Filter ──
     applyFilter.addEventListener('click', () => {
         dateFrom = dateFromInput.value;
@@ -292,10 +296,19 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 data = JSON.parse(text);
             } catch {
-                reservError.textContent = 'Server error: ' + text.substring(0, 200);
+                const plainText = text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+                reservError.textContent = res.status === 401 || /authentication|unauthorized|login required/i.test(plainText)
+                    ? 'Authentication required. Sign in again as a teacher, then retry the upload.'
+                    : `Upload server returned an unexpected response (HTTP ${res.status}).`;
                 reservError.classList.add('visible');
                 reservSubmit.disabled = false;
                 reservSubmit.querySelector('span').textContent = 'Submit Request';
+                return;
+            }
+
+            if (data.message === 'Unauthorized.') {
+                reservError.textContent = 'Your teacher session has expired. Sign in again, then retry the upload.';
+                reservError.classList.add('visible');
                 return;
             }
 

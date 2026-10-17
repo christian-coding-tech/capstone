@@ -34,10 +34,6 @@ $locations = [
     'gate / guardhouse' => ['Gate / Guardhouse', 'The Gate / Guardhouse is the campus entrance.'],
     'main gate' => ['Main Gate', 'The Main Gate is the campus entrance.'],
 ];
-$demoPeople = [
-    ['name' => 'Alex Demo', 'role' => 'teacher', 'location' => 'Faculty Room', 'department' => 'Information Technology'],
-    ['name' => 'Jamie Demo', 'role' => 'student', 'location' => 'Main Building', 'program' => 'BSIT', 'section' => 'BSIT Demo 1A'],
-];
 $normalize = static function (string $value): string {
     return trim((string) preg_replace('/[^a-z0-9]+/i', ' ', strtolower($value)));
 };
@@ -90,31 +86,39 @@ if ($searchName === '' || in_array($normalize($searchName), ['teacher', 'student
 $searchName = ltrim(trim($searchName), " \t\n\r\0\x0B?.!,:-");
 
 if ($directoryRole !== null) {
-    $demoMatches = array_values(array_filter($demoPeople, static function (array $person) use ($directoryRole, $searchName, $normalize, $contains): bool {
-        return $person['role'] === $directoryRole
-            && ($searchName === '' || $contains($normalize($person['name']), $normalize($searchName)));
-    }));
+    $accountRole = $_SESSION['role'] ?? '';
+    if (!isset($_SESSION['user_id'])) {
+        echo json_encode(['success' => true, 'reply' => 'Sign in to search the campus directory.', 'source' => 'local']);
+        exit;
+    }
+    if (!in_array($accountRole, ['admin', 'teacher'], true)) {
+        echo json_encode(['success' => true, 'reply' => 'Directory searches are available to signed-in teachers and administrators.', 'source' => 'local']);
+        exit;
+    }
+    if ($searchName === '') {
+        echo json_encode(['success' => true, 'reply' => "Enter the {$directoryRole}'s full name to search active campus accounts.", 'source' => 'local']);
+        exit;
+    }
 
-    if ($demoMatches) {
-        $person = $demoMatches[0];
-        $reply = "Temporary test profile (demo data, not a real campus account): {$person['name']}, " . ($directoryRole === 'teacher'
-            ? "{$person['department']}; sample location: {$person['location']}."
-            : "{$person['program']}, {$person['section']}; sample campus area: {$person['location']}.");
-        $profile = [
-            'name' => $person['name'],
-            'role' => ucfirst($directoryRole),
-            'program' => $person['program'] ?? null,
-            'section' => $person['section'] ?? null,
-            'department' => $person['department'] ?? null,
-        ];
-        echo json_encode(['success' => true, 'reply' => $reply, 'source' => 'local', 'profile' => $profile]);
+    $personQuery = $pdo->prepare('SELECT full_name, course, section, department FROM users WHERE role = ? AND status = \'active\' AND LOWER(full_name) = LOWER(?) LIMIT 1');
+    $personQuery->execute([$directoryRole, $searchName]);
+    $person = $personQuery->fetch(PDO::FETCH_ASSOC);
+    if (!$person) {
+        echo json_encode(['success' => true, 'reply' => "No active {$directoryRole} account matched that full name.", 'source' => 'local']);
         exit;
     }
-    if ($searchName !== '') {
-        echo json_encode(['success' => true, 'reply' => "I couldn't find that {$directoryRole} in the temporary navigation test profiles. Real student and staff account details aren't exposed through this assistant.", 'source' => 'local']);
-        exit;
-    }
-    echo json_encode(['success' => true, 'reply' => 'Temporary test profiles only: Alex Demo (teacher) and Jamie Demo (student). These are fictional examples, not real campus accounts.', 'source' => 'local']);
+
+    $profile = [
+        'name' => $person['full_name'],
+        'role' => ucfirst($directoryRole),
+        'program' => $person['course'],
+        'section' => $person['section'],
+        'department' => $person['department'],
+    ];
+    $details = array_filter([$person['course'], $person['section'], $person['department']]);
+    $reply = $person['full_name'] . ' is an active ' . $directoryRole . ' account.'
+        . ($details ? ' Recorded details: ' . implode(' · ', $details) . '.' : ' No additional profile details are recorded.');
+    echo json_encode(['success' => true, 'reply' => $reply, 'source' => 'local', 'profile' => $profile]);
     exit;
 }
 
@@ -137,8 +141,7 @@ $venueNames = array_column($venueRows, 'name');
 $localKnowledge = "ACLC College Tacloban - Fatima Campus locations:\n";
 foreach ($locations as $location) $localKnowledge .= "- {$location[0]}: {$location[1]}\n";
 $localKnowledge .= 'Database venues: ' . implode(', ', $venueNames) . "\n";
-$localKnowledge .= "Temporary test profiles (demo only, not real accounts): Alex Demo (teacher, Faculty Room); Jamie Demo (student, BSIT Demo 1A).\n";
-$systemPrompt = "You are the ACLC Fatima Campus navigation assistant. Answer campus, room, facility, demo teacher/student profile, and direction questions using only this local campus information. If a detail is not listed, say so rather than inventing it. Give concise, practical directions. This assistant should answer known campus questions without relying on internet access.\n\n"
+$systemPrompt = "You are the ACLC Fatima Campus navigation assistant. Answer campus, room, facility, and direction questions using only this local campus information. If a detail is not listed, say so rather than inventing it. Give concise, practical directions. This assistant should answer known campus questions without relying on internet access.\n\n"
     . $localKnowledge . "\nCurrent location: " . ($navContext['currentLocation'] ?? 'Unknown')
     . "\nFloor: " . ($navContext['floor'] ?? 'Unknown')
     . "\nDestination type: " . ($navContext['destinationType'] ?? 'Unknown')
@@ -178,6 +181,6 @@ if ($apiKey !== '' && function_exists('curl_init')) {
     }
 }
 
-echo json_encode(['success' => true, 'reply' => 'I can answer campus questions from the local directory. Try asking where a room or facility is, how to get somewhere, which teachers are listed, or what events are scheduled today.', 'source' => 'local']);
+echo json_encode(['success' => true, 'reply' => 'I can answer campus questions from the local directory. Try asking where a room or facility is, how to get somewhere, or what events are scheduled today.', 'source' => 'local']);
 exit;
 ?>

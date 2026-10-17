@@ -282,12 +282,12 @@ body::before {
 .event-pass-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px 14px; margin-top: 14px; color: var(--portal-muted); font-size: 0.8rem; }
 .event-pass-details strong { color: var(--portal-text); }
 .event-pass-photo { grid-row: span 3; width: 96px; height: 116px; border-radius: 10px; object-fit: cover; }
-.student-account-qr { display: flex; align-items: center; gap: 18px; padding: 14px; border: 1px solid var(--portal-line); border-radius: 16px; background: rgba(255,255,255,0.04); }
+.student-account-qr { display: flex; align-items: center; flex-wrap: wrap; gap: 18px; padding: 14px; border: 1px solid var(--portal-line); border-radius: 16px; background: rgba(255,255,255,0.04); }
 .student-account-qr > div:first-child { display: grid; gap: 5px; }
 .student-account-qr strong { color: var(--portal-text); }
 .student-account-qr span { max-width: 210px; color: var(--portal-muted); font-size: 0.75rem; line-height: 1.5; }
-.account-qr-code { display: grid; width: 160px; min-height: 160px; place-items: center; padding: 8px; border-radius: 12px; background: #fff; color: #31506e; font-size: 0.75rem; text-align: center; }
-.account-qr-code canvas, .account-qr-code img { display: block; max-width: 100%; }
+.account-qr-code { display: grid; flex: 0 0 160px; width: 160px; min-height: 160px; place-items: center; padding: 8px; border-radius: 12px; background: #fff; color: #31506e; font-size: 0.75rem; text-align: center; }
+.account-qr-code canvas, .account-qr-code img { display: block; width: 144px; max-width: 100%; height: auto; }
 .scan-attendee-details { margin-top: 16px; padding: 16px; border: 1px solid var(--portal-line); border-radius: 14px; background: rgba(255,255,255,0.04); }
 .scan-attendee-details h3 { margin: 0 0 12px; }
 .scan-id-photo { display: block; width: 120px; height: 140px; margin-bottom: 12px; border-radius: 10px; object-fit: cover; }
@@ -328,6 +328,11 @@ body::before {
 .scanner-box { max-width: 520px; }
 #eventQrReader { overflow: hidden; border: 1px solid var(--portal-line); border-radius: 14px; }
 #eventQrReader video { border-radius: 14px; }
+.scanner-photo-btn { margin-top: 12px; }
+.scanner-photo-input { display: none; }
+body.scanner-open .chatbot-fab,
+body.scanner-open .chatbot-panel,
+body.scanner-open .fab-btn { visibility: hidden !important; pointer-events: none !important; }
 .scanner-message { margin-top: 12px; }
 .calendar-attendance-btn { margin-top: 12px; }
 .day-reservation-item .hosted-event-roster { margin-top: 10px; }
@@ -725,10 +730,9 @@ body::before {
     padding: 14px 16px;
   }
 
-  .account-qr-code {
-    width: 128px;
-    height: 128px;
-  }
+  .student-account-qr { align-items: flex-start; }
+  .student-account-qr > div:first-child { flex: 1 1 100%; }
+  .account-qr-code { flex-basis: 160px; width: 160px; height: 160px; align-self: center; }
 }
 
 @media (max-width: 520px) {

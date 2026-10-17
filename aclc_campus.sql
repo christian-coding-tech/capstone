@@ -20,6 +20,7 @@ SET time_zone = "+00:00";
 --
 -- Database: `aclc_campus`
 --
+-- Seed data retains user accounts and campus venues; activity tables start empty.
 
 -- --------------------------------------------------------
 
@@ -33,16 +34,6 @@ CREATE TABLE `admin_seen` (
   `tab_name` varchar(50) NOT NULL,
   `last_seen` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `admin_seen`
---
-
-INSERT INTO `admin_seen` (`id`, `admin_id`, `tab_name`, `last_seen`) VALUES
-(1, 1, 'pending', '2026-05-28 18:57:40'),
-(2, 1, 'approved', '2026-05-28 18:55:42'),
-(3, 1, 'rejected', '2026-05-28 18:15:18'),
-(4, 1, 'feedback', '2026-05-28 18:15:18');
 
 -- --------------------------------------------------------
 
@@ -58,15 +49,6 @@ CREATE TABLE `feedback` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `feedback`
---
-
-INSERT INTO `feedback` (`id`, `name`, `email`, `message`, `created_at`) VALUES
-(1, NULL, NULL, 'I eat shit', '2026-05-26 08:57:57'),
-(2, NULL, NULL, 'hi, how are ya?', '2026-05-26 09:28:22'),
-(3, NULL, NULL, 'duquwdiq', '2026-05-26 10:16:58');
-
 -- --------------------------------------------------------
 
 --
@@ -79,56 +61,6 @@ CREATE TABLE `login_logs` (
   `action` enum('login','logout') NOT NULL,
   `timestamp` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `login_logs`
---
-
-INSERT INTO `login_logs` (`id`, `user_id`, `action`, `timestamp`) VALUES
-(1, 1, 'login', '2026-05-26 15:51:27'),
-(2, 1, 'logout', '2026-05-26 16:05:45'),
-(3, 4, 'login', '2026-05-26 16:05:58'),
-(4, 4, 'logout', '2026-05-26 16:07:38'),
-(5, 2, 'login', '2026-05-26 16:07:47'),
-(6, 2, 'logout', '2026-05-26 16:08:17'),
-(7, 1, 'login', '2026-05-26 16:08:25'),
-(8, 1, 'logout', '2026-05-26 16:09:23'),
-(9, 2, 'login', '2026-05-26 16:11:17'),
-(10, 2, 'logout', '2026-05-26 16:11:55'),
-(11, 1, 'login', '2026-05-26 16:12:03'),
-(12, 1, 'logout', '2026-05-26 16:14:01'),
-(13, 1, 'login', '2026-05-27 08:39:58'),
-(14, 1, 'logout', '2026-05-27 08:47:09'),
-(15, 2, 'login', '2026-05-27 08:47:17'),
-(16, 2, 'logout', '2026-05-27 14:36:09'),
-(17, 1, 'login', '2026-05-27 14:36:25'),
-(18, 1, 'logout', '2026-05-27 14:46:43'),
-(19, 1, 'login', '2026-05-28 09:18:23'),
-(20, 1, 'logout', '2026-05-28 09:21:55'),
-(21, 2, 'login', '2026-05-28 09:22:01'),
-(22, 2, 'logout', '2026-05-28 09:22:10'),
-(23, 1, 'login', '2026-05-28 09:22:15'),
-(24, 1, 'logout', '2026-05-28 09:31:51'),
-(25, 1, 'login', '2026-05-28 09:31:58'),
-(26, 1, 'logout', '2026-05-28 09:32:02'),
-(27, 2, 'login', '2026-05-28 09:32:12'),
-(28, 2, 'logout', '2026-05-28 09:35:05'),
-(29, 1, 'login', '2026-05-28 09:35:14'),
-(30, 1, 'logout', '2026-05-28 10:00:54'),
-(31, 2, 'login', '2026-05-28 10:01:14'),
-(32, 2, 'logout', '2026-05-28 10:09:00'),
-(33, 1, 'login', '2026-05-28 10:09:07'),
-(34, 1, 'logout', '2026-05-28 10:17:46'),
-(35, 1, 'login', '2026-05-28 10:18:03'),
-(36, 1, 'logout', '2026-05-28 10:18:44'),
-(37, 2, 'login', '2026-05-28 10:18:50'),
-(38, 2, 'logout', '2026-05-28 10:19:30'),
-(39, 1, 'login', '2026-05-28 10:19:36'),
-(40, 1, 'logout', '2026-05-28 10:57:31'),
-(41, 1, 'login', '2026-05-28 10:57:39'),
-(42, 1, 'logout', '2026-05-28 10:57:49'),
-(43, 2, 'login', '2026-05-28 10:57:56'),
-(44, 2, 'logout', '2026-05-28 12:14:18');
 
 -- --------------------------------------------------------
 
@@ -170,19 +102,6 @@ CREATE TABLE `reservations` (
   `approved_by` int(11) DEFAULT NULL,
   `approved_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `reservations`
---
-
-INSERT INTO `reservations` (`id`, `teacher_id`, `venue_id`, `event_name`, `date_of_use`, `time_start`, `time_end`, `proposal_pdf`, `status`, `rejection_reason`, `created_at`, `is_read`, `approved_by`, `approved_at`) VALUES
-(1, 2, 6, 'Meeting for Upcoming events — 203', '2026-05-27', '17:00:00', '18:00:00', 'proposal_6a156d245fd5c2.90759712.pdf', 'rejected', 'kase I don\'t want', '2026-05-26 09:51:32', 1, NULL, NULL),
-(2, 2, 3, 'gwgwe', '2026-05-27', '09:19:00', '18:22:00', 'proposal_6a15734fd85a13.98467481.pdf', 'approved', NULL, '2026-05-26 10:17:51', 1, NULL, NULL),
-(3, 4, 1, 'basketball competition', '2026-05-27', '13:00:00', '17:00:00', NULL, 'approved', NULL, '2026-05-26 16:07:33', 0, NULL, NULL),
-(4, 2, 4, 'Meeting for Upcoming events', '2026-05-27', '18:11:00', '20:11:00', NULL, 'approved', NULL, '2026-05-26 16:11:47', 1, NULL, NULL),
-(5, 2, 3, 'Meeting for Upcoming events', '2026-05-30', '10:30:00', '11:30:00', NULL, 'pending', NULL, '2026-05-28 09:32:38', 1, NULL, NULL),
-(6, 2, 6, 'Meeting for Upcoming events — 203', '2026-05-29', '09:00:00', '10:00:00', NULL, 'pending', NULL, '2026-05-28 10:02:42', 1, NULL, NULL),
-(7, 2, 6, 'basketball competition meeting — 203', '2026-06-02', '18:19:00', '19:20:00', NULL, 'pending', NULL, '2026-05-28 10:19:26', 0, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -383,13 +302,13 @@ ALTER TABLE `venues`
 -- AUTO_INCREMENT for table `admin_seen`
 --
 ALTER TABLE `admin_seen`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `feedback`
 --
 ALTER TABLE `feedback`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `event_attendees`
@@ -401,7 +320,7 @@ ALTER TABLE `event_attendees`
 -- AUTO_INCREMENT for table `login_logs`
 --
 ALTER TABLE `login_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `password_resets`
@@ -413,7 +332,7 @@ ALTER TABLE `password_resets`
 -- AUTO_INCREMENT for table `reservations`
 --
 ALTER TABLE `reservations`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `schedules`
