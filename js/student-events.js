@@ -171,6 +171,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     loadAccountQr();
 
+    const qrModal = document.getElementById('studentQrModal');
+    const qrOpenButton = document.getElementById('showStudentQr');
+    const qrCloseButton = document.getElementById('studentQrClose');
+    if (qrModal && qrOpenButton && qrCloseButton) {
+        const closeQrModal = () => {
+            qrModal.classList.remove('active');
+            qrModal.setAttribute('aria-hidden', 'true');
+            qrModal.hidden = true;
+            document.body.style.overflow = '';
+            qrOpenButton.focus();
+        };
+        qrOpenButton.addEventListener('click', () => {
+            qrModal.hidden = false;
+            qrModal.classList.add('active');
+            qrModal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+            qrCloseButton.focus();
+        });
+        qrCloseButton.addEventListener('click', closeQrModal);
+        qrModal.addEventListener('click', event => {
+            if (event.target === qrModal) closeQrModal();
+        });
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && qrModal.classList.contains('active')) closeQrModal();
+        });
+    }
+
     const chatPanel = document.getElementById('chatbotPanel');
     const chatToggle = document.getElementById('chatbotToggle');
     const chatClose = document.getElementById('chatbotClose');

@@ -17,10 +17,11 @@ $teacher_name = $_SESSION['user_name'];
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/teacher.css">
     <link rel="stylesheet" href="css/dashboard-polish.css">
+    <link rel="stylesheet" href="css/system-ui.css?v=20261018">
     <link rel="stylesheet" href="css/action-loading.css">
     <title>Teacher Dashboard — ACLC Fatima</title>
 </head>
-<body>
+<body class="teacher-dashboard">
 
     <!-- Header -->
     <header class="dashboard-header">
@@ -88,9 +89,9 @@ $teacher_name = $_SESSION['user_name'];
 
             <!-- Date Filter -->
             <div class="date-filter">
-                <label>From</label>
+                <label for="dateFrom">From</label>
                 <input type="date" id="dateFrom">
-                <label>To</label>
+                <label for="dateTo">To</label>
                 <input type="date" id="dateTo">
                 <button class="filter-btn" id="applyFilter">
                     <i class="fa-solid fa-filter"></i> Filter
@@ -251,6 +252,7 @@ $teacher_name = $_SESSION['user_name'];
         </div>
     </div>
     <script src="js/action-loading.js"></script>
+    <script src="js/release-announcement.js"></script>
     <script src="js/teacher.js"></script>
 </body>
 </html>

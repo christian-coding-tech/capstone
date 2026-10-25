@@ -17,10 +17,11 @@ $student_name = $_SESSION['user_name'];
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/teacher.css">
     <link rel="stylesheet" href="css/dashboard-polish.css">
+    <link rel="stylesheet" href="css/system-ui.css?v=20261018">
     <link rel="stylesheet" href="css/action-loading.css">
     <title>Student Dashboard — ACLC Fatima</title>
 </head>
-<body>
+<body class="student-dashboard">
 
     <!-- Header -->
     <header class="dashboard-header">
@@ -54,12 +55,11 @@ $student_name = $_SESSION['user_name'];
                 <p>Keep track of your campus reservation requests and see the latest updates from your school.</p>
             </div>
             <div class="dashboard-hero-actions">
+                <button class="dashboard-shortcut" type="button" id="showStudentQr" aria-haspopup="dialog" aria-controls="studentQrModal">
+                    <i class="fa-solid fa-qrcode" aria-hidden="true"></i> My QR code
+                </button>
                 <a class="dashboard-shortcut primary" href="navigation.php#campusEventsTitle"><i class="fa-solid fa-calendar-days"></i> Events calendar</a>
                 <a class="dashboard-shortcut" href="index.php"><i class="fa-solid fa-house"></i> Landing page</a>
-            </div>
-            <div class="student-account-qr">
-                <div><strong>My student ID QR</strong><span>Show this personal code to an authorized event scanner.</span></div>
-                <div id="accountQrCode" class="account-qr-code" aria-live="polite">Loading QR…</div>
             </div>
         </section>
         <div class="tabs-wrapper" id="eventHistory">
@@ -78,6 +78,17 @@ $student_name = $_SESSION['user_name'];
         </div>
 
     </main>
+
+    <div class="modal-overlay qr-modal-overlay" id="studentQrModal" role="dialog" aria-modal="true" aria-labelledby="studentQrTitle" aria-hidden="true" hidden>
+        <section class="modal-box qr-modal-box">
+            <button type="button" class="modal-close" id="studentQrClose" aria-label="Close student QR code">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+            <h2 class="modal-title" id="studentQrTitle">My student ID QR</h2>
+            <p class="modal-subtitle">Show this personal code to an authorized event scanner.</p>
+            <div id="accountQrCode" class="account-qr-code" aria-live="polite">Loading QR…</div>
+        </section>
+    </div>
 
     <!-- AI Chatbot -->
     <button class="chatbot-fab" id="chatbotToggle" title="Campus Assistant">
@@ -124,5 +135,6 @@ $student_name = $_SESSION['user_name'];
         </div>
     </div>
     <script src="js/action-loading.js"></script>
+    <script src="js/release-announcement.js"></script>
 </body>
 </html>

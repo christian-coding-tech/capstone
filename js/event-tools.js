@@ -42,19 +42,24 @@
         }
         const overlay = document.createElement('div');
         overlay.className = 'modal-overlay active scanner-overlay';
-        overlay.innerHTML = `<div class="modal-box scanner-box"><button type="button" class="modal-close scanner-close"><i class="fa-solid fa-xmark"></i></button><h2 class="modal-title">Scan attendee QR</h2><p class="modal-subtitle">Allow camera access and scan the student’s personal or event QR code.</p><div id="eventQrReader"></div><button type="button" class="action-btn scanner-photo-btn" hidden><i class="fa-solid fa-camera"></i> Use camera photo</button><input class="scanner-photo-input" type="file" accept="image/*" capture="environment"><div class="modal-error scanner-message" role="status"></div></div>`;
+        overlay.innerHTML = `<div class="modal-box scanner-box"><button type="button" class="modal-close scanner-close" aria-label="Close QR scanner"><i class="fa-solid fa-xmark"></i></button><h2 class="modal-title">Scan attendee QR</h2><p class="modal-subtitle">Allow camera access and scan the student’s personal or event QR code.</p><div id="eventQrReader"></div><div class="scanner-controls"><button type="button" class="action-btn scanner-retry-btn" hidden><i class="fa-solid fa-rotate-right"></i> Retry live camera</button><button type="button" class="action-btn scanner-photo-btn" hidden><i class="fa-solid fa-camera"></i> Use camera or photo</button></div><input class="scanner-photo-input" type="file" accept="image/*" capture="environment"><div class="modal-error scanner-message" role="status" aria-live="polite"></div></div>`;
         document.body.appendChild(overlay);
         document.body.style.overflow = 'hidden';
         document.body.classList.add('scanner-open');
         const scanner = new Html5Qrcode('eventQrReader');
+        const retryButton = overlay.querySelector('.scanner-retry-btn');
         const photoButton = overlay.querySelector('.scanner-photo-btn');
         const photoInput = overlay.querySelector('.scanner-photo-input');
         let stopped = false;
         let submitting = false;
         let completed = false;
+        let cameraStartPromise = null;
         const close = async () => {
             if (stopped) return;
             stopped = true;
+            if (cameraStartPromise) {
+                try { await cameraStartPromise; } catch {}
+            }
             try { await scanner.stop(); } catch {}
             scanner.clear();
             overlay.remove();
@@ -126,19 +131,69 @@
                 photoInput.value = '';
             }
         });
-        scanner.start({ facingMode: 'environment' }, { fps: 10, qrbox: { width: 240, height: 240 } }, handleDecoded, () => {}).catch(error => {
+        const cameraConfig = {
+            fps: 12,
+            qrbox: (viewfinderWidth, viewfinderHeight) => {
+                const size = Math.floor(Math.min(viewfinderWidth, viewfinderHeight, window.innerWidth * 0.72, 320));
+                return { width: size, height: size };
+            }
+        };
+        const startCamera = camera => scanner.start(camera, cameraConfig, handleDecoded, () => {});
+        const startLiveCamera = async () => {
+            try {
+                await startCamera({ facingMode: 'environment' });
+            } catch (error) {
+                if (stopped) return;
+                if (/NotAllowedError|PermissionDenied|permission/i.test(`${error?.name || ''} ${error?.message || error}`)) throw error;
+                await new Promise(resolve => setTimeout(resolve, 300));
+                try {
+                    const cameras = await Html5Qrcode.getCameras();
+                    const candidates = cameras.slice().sort((first, second) =>
+                        Number(/back|rear|environment/i.test(second.label)) - Number(/back|rear|environment/i.test(first.label))
+                    );
+                    let lastError = error;
+                    for (const camera of candidates) {
+                        if (stopped) return;
+                        try {
+                            await startCamera(camera.id);
+                            return;
+                        } catch (retryError) {
+                            lastError = retryError;
+                        }
+                    }
+                    throw lastError;
+                } catch (cameraListError) {
+                    throw new Error(`${error.message || error}; unable to start a listed camera: ${cameraListError.message || cameraListError}`);
+                }
+            }
+        };
+        const showCameraError = error => {
+            if (stopped) return;
             const status = overlay.querySelector('.scanner-message');
             const cameraError = `${error?.name || ''} ${error?.message || error}`;
             if (/NotAllowedError|PermissionDenied|permission/i.test(cameraError)) {
                 status.textContent = 'Camera permission was blocked. Allow camera access for this site in your browser settings, then retry. You can also use the camera photo option.';
+            } else if (/AbortError|timeout/i.test(cameraError)) {
+                status.textContent = 'Camera startup timed out. Close other apps using the camera, then retry the live camera or use the camera photo option.';
             } else if (/NotReadableError|Could not start video source|overlay|bubble|in use/i.test(cameraError)) {
                 status.textContent = 'Camera could not start. Close other apps using the camera and any floating bubbles, screen filters, or overlays, then retry. You can also use the camera photo option.';
             } else {
-                status.textContent = `Live camera unavailable: ${error}. Check camera permission and use HTTPS, or try the camera photo option.`;
+                status.textContent = `Live camera unavailable: ${cameraError.trim()}. Check camera permission and use HTTPS, or try the camera photo option.`;
             }
             status.classList.add('visible');
+            retryButton.hidden = false;
             photoButton.hidden = false;
-        });
+        };
+        const tryStartingCamera = () => {
+            retryButton.hidden = true;
+            const status = overlay.querySelector('.scanner-message');
+            status.textContent = 'Starting camera…';
+            status.classList.add('visible');
+            cameraStartPromise = startLiveCamera().catch(showCameraError);
+            return cameraStartPromise;
+        };
+        retryButton.addEventListener('click', tryStartingCamera);
+        tryStartingCamera();
     }
 
     function getEventCategory(event, now = new Date()) {

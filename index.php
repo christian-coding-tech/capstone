@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css\login.css">
+    <link rel="stylesheet" href="css/system-ui.css?v=20261018">
     <link rel="stylesheet" href="css/action-loading.css">
     <title>ACLC Fatima Campus</title>
 </head>

@@ -71,6 +71,192 @@ body::before {
     border-color: rgba(244, 160, 160, 0.35);
 }
 
+button,
+a,
+.request-card,
+.hosted-event-card,
+.teacher-card,
+.dashboard-shortcut,
+.filter-btn,
+.action-btn,
+.tab-btn {
+    transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid var(--portal-cyan);
+    outline-offset: 3px;
+}
+
+.dashboard-header { animation: portalHeaderEnter 420ms ease-out both; }
+.tabs-wrapper { animation: portalEnter 480ms 70ms ease-out both; }
+.tab-content > :nth-child(1) { animation-delay: 40ms; }
+.tab-content > :nth-child(2) { animation-delay: 90ms; }
+.tab-content > :nth-child(3) { animation-delay: 140ms; }
+.request-card,
+.hosted-event-card { transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease; }
+.request-card:hover,
+.hosted-event-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 38px rgba(0, 0, 0, 0.2), inset 0 1px rgba(255, 255, 255, 0.035);
+}
+
+.tab-btn:hover,
+.dashboard-shortcut:hover,
+.filter-btn:hover,
+.action-btn:hover { transform: translateY(-1px); }
+
+/* Keep newly introduced motion optional for users who prefer reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+    .dashboard-header,
+    .tabs-wrapper,
+    .tab-content > *,
+    .dashboard-hero { animation: none !important; }
+
+    button,
+    a,
+    .request-card,
+    .hosted-event-card,
+    .teacher-card,
+    .dashboard-shortcut,
+    .filter-btn,
+    .action-btn,
+    .tab-btn { transition: none !important; }
+}
+
+.release-notice-overlay {
+    position: fixed;
+    z-index: 200;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom));
+    overflow-y: auto;
+    background: rgba(3, 10, 22, 0.74);
+    backdrop-filter: blur(10px);
+    opacity: 0;
+    transition: opacity 220ms ease;
+}
+
+.release-notice-overlay[hidden] { display: none; }
+.release-notice-overlay.is-visible { opacity: 1; }
+
+.release-notice {
+    position: relative;
+    width: min(100%, 520px);
+    max-height: min(760px, calc(100dvh - 36px));
+    overflow-y: auto;
+    padding: clamp(24px, 5vw, 38px);
+    border: 1px solid rgba(125, 196, 245, 0.28);
+    border-radius: 26px;
+    background:
+        radial-gradient(circle at 100% 0, rgba(74, 144, 217, 0.2), transparent 34%),
+        linear-gradient(145deg, #122944, #0b1728 72%);
+    box-shadow: 0 32px 100px rgba(0, 0, 0, 0.55), inset 0 1px rgba(255, 255, 255, 0.08);
+    color: var(--portal-text);
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+    transition: opacity 260ms ease, transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.release-notice-overlay.is-visible .release-notice { opacity: 1; transform: translateY(0) scale(1); }
+.release-notice-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    display: grid;
+    width: 40px;
+    height: 40px;
+    place-items: center;
+    border: 1px solid var(--portal-line);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--portal-muted);
+    cursor: pointer;
+}
+.release-notice-close:hover { background: rgba(255, 255, 255, 0.12); color: var(--portal-text); }
+.release-notice-icon {
+    display: grid;
+    width: 50px;
+    height: 50px;
+    margin-bottom: 18px;
+    place-items: center;
+    border: 1px solid rgba(86, 208, 174, 0.32);
+    border-radius: 16px;
+    background: linear-gradient(145deg, rgba(74, 144, 217, 0.26), rgba(86, 208, 174, 0.13));
+    color: #93e2cb;
+    font-size: 1.2rem;
+}
+.release-notice-eyebrow {
+    color: var(--portal-cyan);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+.release-notice h2 {
+    margin: 10px 0;
+    padding-right: 28px;
+    color: #f5f9ff;
+    font-size: clamp(1.55rem, 5vw, 2rem);
+    letter-spacing: -0.04em;
+    line-height: 1.15;
+}
+.release-notice > p { margin-bottom: 20px; color: #a9c1dc; font-size: 0.88rem; line-height: 1.65; }
+.release-notice-list { display: grid; gap: 10px; margin: 0 0 22px; padding: 0; list-style: none; }
+.release-notice-list li {
+    display: grid;
+    grid-template-columns: 38px minmax(0, 1fr);
+    align-items: start;
+    gap: 12px;
+    padding: 12px;
+    border: 1px solid rgba(125, 196, 245, 0.12);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.035);
+}
+.release-notice-list li > i { padding-top: 3px; color: var(--portal-cyan); text-align: center; }
+.release-notice-list li span { display: grid; gap: 3px; }
+.release-notice-list strong { color: #eaf5ff; font-size: 0.82rem; }
+.release-notice-list small { color: var(--portal-muted); font-size: 0.74rem; line-height: 1.5; }
+.release-notice-continue {
+    display: flex;
+    width: 100%;
+    min-height: 48px;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border: 0;
+    border-radius: 13px;
+    background: linear-gradient(135deg, #4a90d9, #216ca8);
+    box-shadow: 0 10px 24px rgba(31, 115, 195, 0.28);
+    color: white;
+    font: inherit;
+    font-size: 0.86rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 180ms ease, box-shadow 180ms ease;
+}
+.release-notice-continue:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(31, 115, 195, 0.38); }
+
+@keyframes portalHeaderEnter {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 480px) {
+    .release-notice { border-radius: 22px; padding: 24px 18px; }
+    .release-notice-list { gap: 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .release-notice-overlay,
+    .release-notice,
+    .release-notice-continue { transition: none !important; }
+}
 .dashboard-main {
     width: min(1280px, 100%);
     padding: 34px clamp(16px, 3.5vw, 48px) 110px;
@@ -288,6 +474,13 @@ body::before {
 .student-account-qr span { max-width: 210px; color: var(--portal-muted); font-size: 0.75rem; line-height: 1.5; }
 .account-qr-code { display: grid; flex: 0 0 160px; width: 160px; min-height: 160px; place-items: center; padding: 8px; border-radius: 12px; background: #fff; color: #31506e; font-size: 0.75rem; text-align: center; }
 .account-qr-code canvas, .account-qr-code img { display: block; width: 144px; max-width: 100%; height: auto; }
+.qr-modal-box { display: grid; justify-items: center; text-align: center; }
+.qr-modal-overlay[hidden] { display: none; }
+.qr-modal-box .modal-title,
+.qr-modal-box .modal-subtitle { width: 100%; }
+.qr-modal-box .account-qr-code { flex: none; width: min(240px, 100%); min-height: 240px; }
+.qr-modal-box .account-qr-code canvas,
+.qr-modal-box .account-qr-code img { width: 100%; max-width: 224px; }
 .scan-attendee-details { margin-top: 16px; padding: 16px; border: 1px solid var(--portal-line); border-radius: 14px; background: rgba(255,255,255,0.04); }
 .scan-attendee-details h3 { margin: 0 0 12px; }
 .scan-id-photo { display: block; width: 120px; height: 140px; margin-bottom: 12px; border-radius: 10px; object-fit: cover; }
@@ -328,7 +521,10 @@ body::before {
 .scanner-box { max-width: 520px; }
 #eventQrReader { overflow: hidden; border: 1px solid var(--portal-line); border-radius: 14px; }
 #eventQrReader video { border-radius: 14px; }
-.scanner-photo-btn { margin-top: 12px; }
+.scanner-box .action-btn[hidden] { display: none; }
+.scanner-controls { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 12px; }
+.scanner-photo-btn { min-height: 44px; }
+.scanner-retry-btn { min-height: 44px; }
 .scanner-photo-input { display: none; }
 body.scanner-open .chatbot-fab,
 body.scanner-open .chatbot-panel,
@@ -526,6 +722,8 @@ body.scanner-open .fab-btn { visibility: hidden !important; pointer-events: none
     .notification-list { max-height: 52vh; }
     .attendance-table-wrap { -webkit-overflow-scrolling: touch; }
 }
+
+
 
 /* Keep dashboard content readable and reachable on narrow touch screens. */
 @media (max-width: 760px) {
@@ -760,4 +958,93 @@ body.scanner-open .fab-btn { visibility: hidden !important; pointer-events: none
   .dashboard-hero {
     animation: none !important;
   }
+}
+
+@media (max-width: 760px) {
+    .teacher-dashboard .dashboard-main { padding-bottom: 180px; }
+    .student-dashboard .dashboard-main { padding-bottom: 110px; }
+
+    .teacher-dashboard .tabs,
+    .student-dashboard .tabs {
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        scroll-snap-type: x proximity;
+    }
+
+    .teacher-dashboard .tab-btn,
+    .student-dashboard .tab-btn {
+        flex: 0 0 auto;
+        scroll-snap-align: start;
+    }
+
+    .teacher-dashboard .dashboard-hero-actions,
+    .student-dashboard .dashboard-hero-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .teacher-dashboard .dashboard-shortcut,
+    .student-dashboard .dashboard-shortcut {
+        min-width: 0;
+        padding: 9px 12px;
+        text-align: center;
+    }
+
+    .teacher-dashboard .scanner-overlay {
+        padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom));
+    }
+
+    .teacher-dashboard .scanner-box {
+        width: 100%;
+        max-width: 560px;
+        padding: 24px 16px;
+    }
+
+    .teacher-dashboard #eventQrReader {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .teacher-dashboard #eventQrReader video,
+    .teacher-dashboard #eventQrReader canvas {
+        max-width: 100%;
+    }
+
+    .teacher-dashboard .scanner-controls > button { flex: 1 1 170px; justify-content: center; }
+}
+
+@media (max-width: 480px) {
+    .teacher-dashboard .dashboard-hero-actions,
+    .student-dashboard .dashboard-hero-actions {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .teacher-dashboard .tabs-wrapper,
+    .student-dashboard .tabs-wrapper { overflow: hidden; }
+
+    .teacher-dashboard .tabs,
+    .student-dashboard .tabs {
+        margin: 0;
+        padding-bottom: 4px;
+    }
+
+    .teacher-dashboard .date-filter {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 8px;
+    }
+
+    .teacher-dashboard .date-filter .filter-btn { grid-column: span 1; }
+
+    .teacher-dashboard .scanner-box {
+        max-height: calc(100dvh - 16px);
+        padding: 24px 14px 18px;
+    }
+
+    .qr-modal-box .account-qr-code {
+        width: min(240px, 100%);
+        min-height: 240px;
+    }
 }
