@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabs = [...document.querySelectorAll('[data-history]')];
     let events = [];
     let activeHistory = 'upcoming';
+    const qrImageSize = 1024;
 
     const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -77,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }).join('');
 
         content.querySelectorAll('.event-qr').forEach(node => {
-            if (window.QRCode) new QRCode(node, { text: node.dataset.token, width: 144, height: 144, colorDark: '#10243b', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+            if (window.QRCode) new QRCode(node, { text: node.dataset.token, width: qrImageSize, height: qrImageSize, colorDark: '#10243b', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
             else node.textContent = 'QR generator unavailable. Refresh the page to try again.';
         });
     }
@@ -141,12 +142,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const image = document.createElement('img');
                 image.src = data.image_data;
                 image.alt = 'Personal student ID QR code';
-                host.replaceChildren(image);
-                return;
+                await image.decode();
+                if (image.naturalWidth >= qrImageSize && image.naturalHeight >= qrImageSize) {
+                    host.replaceChildren(image);
+                    return;
+                }
             }
             if (!window.QRCode) throw new Error('QR generator unavailable. Refresh the page to try again.');
             host.textContent = '';
-            new QRCode(host, { text: data.token, width: 144, height: 144, colorDark: '#10243b', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+            new QRCode(host, { text: data.token, width: qrImageSize, height: qrImageSize, colorDark: '#10243b', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
             const canvas = host.querySelector('canvas');
             if (!canvas) throw new Error('Unable to generate your QR image.');
             const qrImage = canvas.toDataURL('image/png');

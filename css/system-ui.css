@@ -232,6 +232,278 @@ a { -webkit-tap-highlight-color: transparent; }
     .filter-btn { min-height: 44px; }
 }
 
+:root {
+    --system-line-strong: rgba(139, 213, 244, 0.3);
+    --system-panel-shadow: 0 18px 48px rgba(0, 0, 0, 0.2), inset 0 1px rgba(255, 255, 255, 0.045);
+    --system-motion-fast: 160ms var(--system-ease);
+    --system-motion: 260ms var(--system-ease);
+}
+
+html { scroll-padding-top: 84px; }
+
+.dashboard-header {
+    min-height: 72px;
+    border-bottom-color: var(--system-line-strong);
+}
+
+.dashboard-header .school-name { letter-spacing: -0.015em; }
+.dashboard-main { width: min(1360px, 100%); }
+
+.dashboard-hero {
+    border-color: var(--system-line-strong);
+    border-radius: 24px;
+    box-shadow: var(--system-panel-shadow);
+}
+
+.dashboard-shortcut {
+    border-radius: 14px;
+    font-weight: 700;
+    transition: transform var(--system-motion-fast), background var(--system-motion-fast), border-color var(--system-motion-fast), box-shadow var(--system-motion-fast), color var(--system-motion-fast);
+}
+
+.dashboard-shortcut:hover {
+    border-color: rgba(139, 213, 244, 0.44);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+}
+
+.tabs-wrapper {
+    border-color: var(--system-line-strong);
+    border-radius: 20px;
+    backdrop-filter: blur(16px) saturate(135%);
+}
+
+.tab-btn {
+    transition: color var(--system-motion-fast), background var(--system-motion-fast), border-color var(--system-motion-fast), box-shadow var(--system-motion-fast), transform var(--system-motion-fast);
+}
+
+.tab-btn.active { border: 1px solid rgba(139, 213, 244, 0.22); }
+
+.request-card,
+.hosted-event-card,
+.teacher-card,
+.feedback-card,
+.log-table-wrap,
+.calendar-grid {
+    border-radius: 20px;
+    box-shadow: var(--system-panel-shadow);
+}
+
+.request-card:hover,
+.hosted-event-card:hover,
+.teacher-card:hover,
+.feedback-card:hover {
+    border-color: var(--system-line-strong);
+}
+
+.action-btn,
+.filter-btn,
+.toolbar-btn,
+.logout-btn,
+.map-tool-btn,
+.quick-reply-btn,
+.nav-chatbot-send {
+    transition: transform var(--system-motion-fast), color var(--system-motion-fast), background var(--system-motion-fast), border-color var(--system-motion-fast), box-shadow var(--system-motion-fast);
+}
+
+button:not(:disabled):active,
+.action-btn:active,
+.filter-btn:active,
+.toolbar-btn:active { transform: translateY(0) scale(0.98); }
+
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+    cursor: not-allowed;
+    opacity: 0.62;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea,
+.date-filter input,
+.cal-search,
+.chatbot-input-wrap input,
+.nav-chatbot-input-wrap input {
+    transition: border-color var(--system-motion-fast), background-color var(--system-motion-fast), box-shadow var(--system-motion-fast);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus,
+.date-filter input:focus,
+.cal-search:focus,
+.chatbot-input-wrap input:focus,
+.nav-chatbot-input-wrap input:focus {
+    border-color: rgba(139, 213, 244, 0.64);
+    box-shadow: 0 0 0 4px rgba(74, 144, 217, 0.13);
+}
+
+.modal-overlay {
+    backdrop-filter: blur(9px) saturate(125%);
+}
+
+.modal-box,
+.modal-box-wide {
+    opacity: 0;
+    transform: translateY(16px) scale(0.985);
+    transition: opacity 220ms ease, transform 320ms var(--system-ease), border-color var(--system-motion-fast), box-shadow var(--system-motion-fast);
+}
+
+.modal-overlay.active .modal-box,
+.modal-overlay.active .modal-box-wide {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.modal-close {
+    border-radius: 12px;
+    transition: transform var(--system-motion-fast), color var(--system-motion-fast), background var(--system-motion-fast), border-color var(--system-motion-fast);
+}
+
+.modal-close:hover { transform: rotate(4deg); }
+
+.tab-content > .request-card,
+.tab-content > .hosted-event-card,
+.tab-content > .teacher-card,
+.tab-content > .feedback-card,
+.tab-content > .empty-state,
+.tab-content > .loading-state {
+    animation: systemContentEnter 360ms var(--system-ease) both;
+}
+
+.tab-content > :nth-child(2) { animation-delay: 35ms; }
+.tab-content > :nth-child(3) { animation-delay: 70ms; }
+.tab-content > :nth-child(4) { animation-delay: 105ms; }
+
+.log-table-wrap tbody tr { transition: background-color var(--system-motion-fast); }
+.log-table-wrap tbody tr:hover { background: rgba(139, 213, 244, 0.055); }
+
+.nav-bg-content {
+    width: min(1080px, calc(100% - 32px));
+    padding: clamp(56px, 8vw, 92px) clamp(16px, 4vw, 36px) 170px;
+}
+
+.coming-soon-title {
+    font-size: clamp(2.4rem, 6.4vw, 4.7rem);
+    font-weight: 700;
+    letter-spacing: -0.055em;
+    text-wrap: balance;
+}
+
+.coming-soon-desc {
+    max-width: 620px;
+    margin-right: auto;
+    margin-left: auto;
+    line-height: 1.8;
+}
+
+.sample-map {
+    margin-top: 38px;
+    padding: clamp(16px, 3vw, 26px);
+    border-radius: 24px;
+    box-shadow: var(--system-panel-shadow);
+    backdrop-filter: blur(16px) saturate(125%);
+}
+
+.map-viewport {
+    height: clamp(360px, 52vw, 520px);
+    border-radius: 16px;
+}
+
+.map-location-info,
+.campus-guide,
+.campus-events {
+    border-radius: 18px;
+}
+
+.campus-location,
+.overview-card,
+.update-log-item {
+    transition: transform var(--system-motion), border-color var(--system-motion-fast), background var(--system-motion-fast), box-shadow var(--system-motion-fast);
+}
+
+.campus-location:hover,
+.overview-card:hover,
+.update-log-item:hover {
+    transform: translateY(-3px);
+}
+
+@keyframes systemContentEnter {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+body.page-entering { animation: systemPageEnter 300ms ease both; }
+body.page-leaving { animation: systemPageLeave 220ms ease both; pointer-events: none; }
+
+@keyframes systemPageEnter {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes systemPageLeave {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+@media (max-width: 680px) {
+    .dashboard-header { min-height: 0; }
+    .dashboard-hero,
+    .tabs-wrapper,
+    .request-card,
+    .hosted-event-card,
+    .teacher-card,
+    .feedback-card { border-radius: 18px; }
+    .sample-map {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        border-radius: 20px;
+    }
+    .map-workspace,
+    .map-viewport {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+    }
+    .map-viewport {
+        height: clamp(220px, 44vh, 340px);
+        height: clamp(220px, 44svh, 340px);
+    }
+    .map-canvas { width: min(100%, 720px); max-width: 100%; }
+    .campus-map-image { max-width: 100%; }
+    .nav-bg-content { padding-bottom: 150px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .tab-content > .request-card,
+    .tab-content > .hosted-event-card,
+    .tab-content > .teacher-card,
+    .tab-content > .feedback-card,
+    .tab-content > .empty-state,
+    .tab-content > .loading-state { animation: none !important; }
+    .dashboard-header,
+    .dashboard-shortcut,
+    .tab-btn,
+    .request-card,
+    .hosted-event-card,
+    .teacher-card,
+    .feedback-card,
+    .action-btn,
+    .filter-btn,
+    .toolbar-btn,
+    .logout-btn,
+    .modal-overlay,
+    .modal-box,
+    .modal-box-wide,
+    .modal-close,
+    .campus-location,
+    .overview-card,
+    .update-log-item { transition: none !important; }
+}
+
 @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
     *,

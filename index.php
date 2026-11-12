@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css\login.css">
-    <link rel="stylesheet" href="css/system-ui.css?v=20261018">
+    <link rel="stylesheet" href="css/system-ui.css?v=20261112-3">
     <link rel="stylesheet" href="css/action-loading.css">
     <title>ACLC Fatima Campus</title>
 </head>
@@ -27,8 +27,7 @@
                 <p class="login-subtitle">Explore campus, find events, and share feedback.</p>
             </div>
             <button class="admin-link" id="loginToggle" aria-label="Sign in">
-                <i class="fa-solid fa-circle-user"></i>
-                <span>Sign in</span>
+                <i class="fa-solid fa-circle-user" aria-hidden="true"></i>
             </button>
         </header>
 
@@ -36,16 +35,14 @@
             <div class="content-wrapper">
                 <div class="login-image" id="modelContainer">
                     <div class="model-eyebrow"><i class="fa-solid fa-cube"></i> Explore the campus</div>
-                    <div class="model-frame" id="modelFrame">
-                        <div class="model-glow"></div>
-                        <canvas id="threeCanvas" class="model-preview"></canvas>
-                        <div class="model-loading" id="modelLoading"><span></span> Loading campus model</div>
-                        <div class="model-label" id="modelLabel">ACLC Fatima Campus</div>
-                    </div>
-                    <div class="model-caption">
-                        <strong>ACLC Fatima Campus</strong>
-                        <span>Interactive campus preview</span>
-                    </div>
+                    <button class="model-toggle" id="modelToggle" type="button" aria-controls="modelModal" aria-expanded="false">
+                        <span class="model-toggle-icon"><i class="fa-solid fa-cube" aria-hidden="true"></i></span>
+                        <span class="model-toggle-copy">
+                            <strong>Explore the campus in 3D</strong>
+                            <small>Open an interactive view of ACLC Fatima Campus.</small>
+                        </span>
+                        <span class="model-toggle-action">View campus <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+                    </button>
                 </div>
 
                 <div class="login-container">
@@ -140,6 +137,26 @@
     <button class="nav-close-btn" id="navCloseBtn" style="display:none;">
         <i class="fa-solid fa-xmark"></i> Exit Navigation
     </button>
+
+    <!-- Login Modal -->
+    <div class="modal-overlay model-modal-overlay" id="modelModal" hidden>
+        <section class="model-modal-box" role="dialog" aria-modal="true" aria-labelledby="modelModalTitle">
+            <button class="modal-close model-modal-close" id="modelClose" type="button" aria-label="Close 3D campus preview">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+            <div class="model-modal-heading">
+                <p class="login-kicker">Interactive campus model</p>
+                <h2 id="modelModalTitle">ACLC Fatima Campus</h2>
+                <p>Explore the campus model. Use the controls to zoom in or out.</p>
+            </div>
+            <div class="model-frame" id="modelFrame">
+                <div class="model-glow"></div>
+                <canvas id="threeCanvas" class="model-preview"></canvas>
+                <div class="model-loading" id="modelLoading"><span></span> Loading campus model</div>
+                <div class="model-label" id="modelLabel">ACLC Fatima Campus</div>
+            </div>
+        </section>
+    </div>
 
     <!-- Login Modal -->
     <div class="modal-overlay" id="loginModal">
@@ -237,6 +254,7 @@
         </div>
     </div>
     <script src="js/action-loading.js"></script>
+    <script src="js/page-transition.js"></script>
     <script src="js/login.js"></script>
 </body>
 </html>

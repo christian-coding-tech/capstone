@@ -48,42 +48,7 @@
 
     let model = null;
 
-    // Interaction / animation targets
-    let targetRotY = 0;
-    let currentRotY = 0;
-    let targetTiltX = 0;
-    let targetTiltY = 0;
-    let targetScale = 1;
-    let currentScale = 1;
-    let baseScale = 1;
     let defaultCameraZ = camera.position.z;
-
-    // Rotation toggle
-    let rotationEnabled = true;
-
-    // Continuous rotation parameters
-    let baseRotY = 0;            // absolute rotation driven by time
-    let pointerOffsetRotY = 0;   // pointer-based offset applied on top
-    const rotationPeriod = 20.0; // seconds per full revolution
-    const rotationSpeed = (Math.PI * 2) / rotationPeriod;
-
-    // Create a small UI button to toggle auto-rotation
-    (function createRotateToggle(){
-        const frameEl = canvas.closest('.model-frame') || document.getElementById('modelFrame') || document.body;
-        if (!frameEl) return;
-        const btn = document.createElement('button');
-        btn.className = 'model-rotate-toggle';
-        btn.title = 'Toggle auto-rotate';
-        btn.type = 'button';
-        btn.innerHTML = '<i class="fa-solid fa-rotate-right"></i>';
-        frameEl.appendChild(btn);
-
-        btn.addEventListener('click', () => {
-            rotationEnabled = !rotationEnabled;
-            btn.classList.toggle('off', !rotationEnabled);
-            btn.innerHTML = rotationEnabled ? '<i class="fa-solid fa-rotate-right"></i>' : '<i class="fa-solid fa-pause"></i>';
-        });
-    })();
 
     // Zoom controls
     let cameraZ = camera.position.z;
@@ -105,6 +70,7 @@
     function setZoom(distance) {
         targetCameraZ = clampCameraZ(distance);
         syncZoomSlider();
+        render();
     }
 
     (function createZoomControls(){
@@ -158,9 +124,6 @@
         wrap.appendChild(reset);
         reset.addEventListener('click', () => {
             setZoom(defaultCameraZ);
-            targetRotY = 0;
-            baseRotY = 0;
-            pointerOffsetRotY = 0;
         });
 
         // wheel to zoom
@@ -204,18 +167,12 @@
                 node.receiveShadow = true;
             });
 
-            // initialize rotations/scales
-            currentRotY = model.rotation.y;
-            targetRotY  = model.rotation.y;
-            currentScale = model.scale.x || 1;
-            baseScale    = currentScale;
-            targetScale  = currentScale;
-
             // Hide label once loaded
             const label = document.querySelector('.model-label');
             if (label) label.textContent = 'ACLC Fatima Campus';
             const loading = document.getElementById('modelLoading');
             if (loading) loading.classList.add('is-hidden');
+            render();
         },
         function(progress) {
             // Loading progress
@@ -233,84 +190,37 @@
     function resize() {
         const w = canvas.clientWidth;
         const h = canvas.clientHeight;
+        if (!w || !h) return false;
         if (canvas.width !== w || canvas.height !== h) {
             renderer.setSize(w, h, false);
             camera.aspect = w / h;
             camera.updateProjectionMatrix();
         }
+        return true;
     }
 
-    // ── Float animation (improved) ──
-    const clock = new THREE.Clock();
-    let floatTime = 0;
-
-    // pointer interaction
-    let isPointerOver = false;
-    canvas.addEventListener('pointermove', (e) => {
-        const r = canvas.getBoundingClientRect();
-        const nx = ((e.clientX - r.left) / r.width) * 2 - 1; // -1..1
-        const ny = ((e.clientY - r.top) / r.height) * 2 - 1; // -1..1
-        // tilt targets (subtle)
-        targetTiltY = nx * 0.18;
-        targetTiltX = ny * 0.12;
-        // pointer yaw offset (applied on top of base rotation)
-        pointerOffsetRotY = nx * 0.25;
-    });
-
-    canvas.addEventListener('pointerenter', () => {
-        isPointerOver = true;
-        targetScale = baseScale * 1.035;
-    });
-    canvas.addEventListener('pointerleave', () => {
-        isPointerOver = false;
-        targetTiltX = targetTiltY = 0;
-        targetRotY = 0;
-        targetScale = baseScale;
-    });
-
-    // easing helper
     const lerp = (a, b, t) => a + (b - a) * t;
+    let renderFrame = null;
 
-    // ── Animate ──
-    function animate() {
-        requestAnimationFrame(animate);
-        resize();
+    function render() {
+        if (renderFrame !== null) return;
+        renderFrame = requestAnimationFrame(() => {
+            renderFrame = null;
+            if (!resize()) return;
 
-        const dt = clock.getDelta();
-        floatTime += dt * 0.9; // slower natural float
+            cameraZ = lerp(cameraZ, targetCameraZ, 0.12);
+            if (Math.abs(targetCameraZ - cameraZ) < 0.01) cameraZ = targetCameraZ;
+            camera.position.z = modelGroup.position.z + cameraZ;
+            renderer.render(scene, camera);
 
-            if (model) {
-                // base continuous rotation (360° over rotationPeriod) when enabled
-                if (rotationEnabled) {
-                    baseRotY += rotationSpeed * dt;
-                }
-
-                // target rotation is base rotation + pointer offset
-                targetRotY = baseRotY + pointerOffsetRotY;
-
-                // ease rotation
-                currentRotY = lerp(currentRotY, targetRotY, 0.06);
-                // apply to model for consistent tilt + rotation
-                model.rotation.y = currentRotY;
-
-            // tilt (x rotation) eased
-            model.rotation.x = lerp(model.rotation.x || 0, targetTiltX, 0.08);
-            model.rotation.z = lerp(model.rotation.z || 0, -targetTiltY * 0.08, 0.06);
-
-            // float up/down with layered sine for organic motion
-            const bob = Math.sin(floatTime * 1.0) * 0.08 + Math.sin(floatTime * 0.37) * 0.03;
-            model.position.y = bob;
-
-            // scale hover effect
-            currentScale = lerp(currentScale, targetScale, 0.06);
-            model.scale.setScalar(currentScale);
-        }
-        // smooth camera zoom
-        cameraZ = lerp(cameraZ, targetCameraZ, 0.12);
-        camera.position.z = modelGroup.position.z + cameraZ;
-
-        renderer.render(scene, camera);
+            if (cameraZ !== targetCameraZ) render();
+        });
     }
 
-    animate();
+    if (window.ResizeObserver) {
+        new ResizeObserver(render).observe(canvas);
+    } else {
+        window.addEventListener('resize', render);
+    }
+    render();
 })();

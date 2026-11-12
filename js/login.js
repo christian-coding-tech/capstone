@@ -19,13 +19,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── Modal helpers ──
     function openModal(modal) {
-        modal.classList.add('active');
+        const wasHidden = modal.hidden;
+        modal.hidden = false;
+        if (wasHidden) {
+            requestAnimationFrame(() => modal.classList.add('active'));
+        } else {
+            modal.classList.add('active');
+        }
         document.body.style.overflow = 'hidden';
     }
 
     function closeModal(modal) {
         modal.classList.remove('active');
         document.body.style.overflow = '';
+        if (modal.id === 'modelModal') {
+            setTimeout(() => {
+                if (!modal.classList.contains('active')) modal.hidden = true;
+            }, 350);
+        }
     }
 
     // ── Login modal ──
@@ -60,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await res.json();
             if (res.ok && data.success && data.redirect) {
                 loginSubmit.querySelector('span').textContent = 'Redirecting...';
-                window.location.assign(data.redirect);
+                window.PageTransition.navigate(data.redirect);
             } else {
                 loginError.textContent = data.message || 'Unable to sign in. Please try again.';
                 loginError.classList.add('visible');
@@ -140,6 +151,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const navMinimize = document.getElementById('navChatbotMinimize');
     const navTab      = document.getElementById('navChatbotTab');
     const navReplies  = document.getElementById('navQuickReplies');
+    const modelToggle = document.getElementById('modelToggle');
+    const modelModal  = document.getElementById('modelModal');
+    const modelClose  = document.getElementById('modelClose');
+
+    modelToggle.addEventListener('click', () => {
+        modelToggle.setAttribute('aria-expanded', 'true');
+        openModal(modelModal);
+        modelClose.focus();
+    });
+    function closeModelModal() {
+        closeModal(modelModal);
+        modelToggle.setAttribute('aria-expanded', 'false');
+        modelToggle.focus();
+    }
+    modelClose.addEventListener('click', closeModelModal);
+    modelModal.addEventListener('click', event => {
+        if (event.target === modelModal) closeModelModal();
+    });
 
     let navActive = false;
 
@@ -248,14 +277,19 @@ document.addEventListener('DOMContentLoaded', () => {
         navState = { step: 'location', currentLocation: null, floor: null, destination: null };
     }
 
-    navBtn.addEventListener('click', () => {
+    navBtn.addEventListener('click', event => {
+        event.preventDefault();
         navBtn.classList.add('is-loading');
         navBtn.querySelector('i').className = 'fa-solid fa-spinner fa-spin';
-        window.location.href = 'navigation.php';
+        window.PageTransition.navigate('navigation.php');
     });
     navCloseBtn.addEventListener('click', exitNavMode);
     navBlur.addEventListener('click', exitNavMode);
-    document.addEventListener('keydown', e => { if (e.key === 'Escape' && navActive) exitNavMode(); });
+    document.addEventListener('keydown', e => {
+        if (e.key !== 'Escape') return;
+        if (navActive) exitNavMode();
+        if (modelModal.classList.contains('active')) closeModelModal();
+    });
 
     // ── Minimize / restore ──
     navMinimize.addEventListener('click', () => {
@@ -350,7 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
             directions: reply
         }));
 
-        window.location.href = 'navigation.php';
+        window.PageTransition.navigate('navigation.php');
     }
 
     async function handleNavInput() {

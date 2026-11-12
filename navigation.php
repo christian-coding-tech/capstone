@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/navigation.css?v=<?= filemtime(__DIR__ . '/css/navigation.css') ?>">
-    <link rel="stylesheet" href="css/system-ui.css?v=20261018">
+    <link rel="stylesheet" href="css/system-ui.css?v=20261112-3">
     <title>Campus Navigation — ACLC Fatima</title>
 </head>
 <body>
@@ -115,18 +115,6 @@
                         <p id="mapLocationDescription">Select a highlighted area to inspect this sample view.</p>
                     </div>
                 </div>
-                <?php
-                    $campusPhotoPath = __DIR__ . '/img/campus-photo.jpg';
-                    $campusPhotoExists = file_exists($campusPhotoPath);
-                    $campusPhotoSrc = $campusPhotoExists ? 'img/campus-photo.jpg' : 'img/3d pic.png';
-                ?>
-                <figure class="map-photo-placeholder">
-                    <img src="<?= $campusPhotoSrc ?>" alt="<?= $campusPhotoExists ? 'Photograph of the ACLC Fatima campus' : 'Illustrated overview of the ACLC Fatima campus' ?>" loading="lazy">
-                    <figcaption>
-                        <i class="fa-regular fa-image" aria-hidden="true"></i>
-                        <span><?= $campusPhotoExists ? 'Campus photo (current)' : 'Campus illustration preview' ?><small><?= $campusPhotoExists ? 'Placed at img/campus-photo.jpg' : 'Replace with a campus photograph when one is available.' ?></small></span>
-                    </figcaption>
-                </figure>
             </section>
 
             <section class="campus-guide" aria-labelledby="campusGuideTitle">
@@ -203,11 +191,14 @@
         </div>
         <div class="nav-chatbot-messages" id="navChatbotMessages"></div>
         <div class="nav-person-placeholder" id="navPersonPlaceholder" hidden aria-live="polite">
-            <div class="nav-person-photo"><i class="fa-solid fa-user" aria-hidden="true"></i></div>
+            <div class="nav-person-photo">
+                <img id="navPersonPhotoImage" alt="" hidden>
+                <i class="fa-solid fa-user" aria-hidden="true"></i>
+            </div>
             <div>
                 <strong id="navPersonName"></strong>
                 <span id="navPersonDetails"></span>
-                <small>Profile photo placeholder · temporary test data is labeled</small>
+                <small>Campus directory profile</small>
             </div>
         </div>
         <div class="nav-quick-replies" id="navQuickReplies"></div>
@@ -225,6 +216,7 @@
         <span>Campus Assistant</span>
     </button>
 
+    <script src="js/page-transition.js"></script>
     <script src="js/navigation.js"></script>
     <script src="js/events-calendar.js"></script>
 </body>

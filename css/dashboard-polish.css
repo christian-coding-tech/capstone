@@ -462,7 +462,8 @@ textarea:focus-visible {
 .event-status-label { margin-bottom: 8px; color: var(--portal-cyan); font-size: 0.7rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
 .event-qr-wrap { display: flex; align-items: center; gap: 15px; margin-top: 18px; padding: 14px; width: fit-content; border: 1px solid var(--portal-line); border-radius: 15px; background: rgba(255,255,255,0.96); }
 .event-qr-wrap > span { max-width: 170px; color: #31506e; font-size: 0.76rem; line-height: 1.5; }
-.event-qr { display: grid; min-width: 144px; min-height: 144px; place-items: center; }
+.event-qr { display: grid; width: 144px; height: 144px; flex: 0 0 144px; place-items: center; }
+.event-qr canvas, .event-qr img { display: block; width: 144px; height: 144px; max-width: 100%; }
 .event-qr-archived { opacity: 0.72; filter: grayscale(0.65); }
 .event-qr-archived .event-qr { pointer-events: none; user-select: none; }
 .event-pass-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px 14px; margin-top: 14px; color: var(--portal-muted); font-size: 0.8rem; }

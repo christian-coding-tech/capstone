@@ -13,6 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const personPlaceholder = document.getElementById('navPersonPlaceholder');
     const personName = document.getElementById('navPersonName');
     const personDetails = document.getElementById('navPersonDetails');
+    const personPhotoImage = document.getElementById('navPersonPhotoImage');
+    const personPhotoIcon = document.querySelector('.nav-person-photo i');
     const mapRoute = document.getElementById('mapRoute');
     const mapRouteLine = document.getElementById('mapRouteLine');
     const mapRouteStart = document.getElementById('mapRouteStart');
@@ -322,6 +324,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 personName.textContent = data.profile.name;
                 personDetails.textContent = [data.profile.role, data.profile.program, data.profile.section, data.profile.department]
                     .filter(Boolean).join(' · ');
+                if (data.profile.id_photo) {
+                    personPhotoImage.src = data.profile.id_photo;
+                    personPhotoImage.alt = `Profile photo of ${data.profile.name}`;
+                    personPhotoImage.hidden = false;
+                    personPhotoIcon.hidden = true;
+                } else {
+                    personPhotoImage.removeAttribute('src');
+                    personPhotoImage.alt = '';
+                    personPhotoImage.hidden = true;
+                    personPhotoIcon.hidden = false;
+                }
                 personPlaceholder.hidden = false;
             }
             return data.reply;
@@ -435,7 +448,7 @@ document.addEventListener('DOMContentLoaded', () => {
             await botSay('Wonderful! 🎉 Thank you for using ACLC Campus Navigation. Have a great day!', 700);
             input.disabled = true;
             await new Promise(r => setTimeout(r, 2500));
-            window.location.href = 'index.php';
+            window.PageTransition.navigate('index.php');
         } else {
             await botSay('No problem! Let me help you again.', 600);
             navContext = null;

@@ -31,7 +31,9 @@ try {
         exit;
     }
     $imageBytes = base64_decode($matches[1], true);
-    if ($imageBytes === false || strlen($imageBytes) > 350000 || @getimagesizefromstring($imageBytes) === false) {
+    $imageInfo = $imageBytes === false ? false : @getimagesizefromstring($imageBytes);
+    if ($imageBytes === false || strlen($imageBytes) > 350000 || $imageInfo === false
+        || $imageInfo[2] !== IMAGETYPE_PNG || $imageInfo[0] < 1024 || $imageInfo[1] < 1024) {
         echo json_encode(['success' => false, 'message' => 'Invalid QR image.']);
         exit;
     }

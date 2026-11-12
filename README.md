@@ -8,7 +8,7 @@ The system provides these main features:
 
 - Campus navigation with suggested assistant prompts, local answers for campus facilities and approved events, and a guided route planner.
 - Campus map previews, route markers, landmark selection, zooming, panning, and facility previews.
-- A local campus illustration preview for navigation. Teacher and student directory lookups use active database accounts and are available only to signed-in teachers and administrators. To replace the illustration with an approved campus photograph, place the photo at img/campus-photo.jpg (the page will use it automatically). Recommended dimensions: ~1600×900 or similar.
+- Teacher and student directory lookups use active database accounts and are available only to signed-in teachers and administrators.
 - Interactive 3D campus model on the landing page.
 - Student and teacher reservation workflows.
 - Course-targeted campus events, student event history, personal student QR codes, event QR attendance, and host attendance tracking.
@@ -65,11 +65,12 @@ aclc_campus.sql        Database schema with retained account and venue records
 - If `db/event_attendance_migration.sql` was already run before department notifications were added, run `db/department_notifications_migration.sql` once. Do not run it after importing the updated SQL dump.
 - Admins should populate student `course`, `section`, `adviser`, ID photo, and all-account `department` fields (or include the available fields in student CSV files). Reservations can target all students, one course, or a department.
 - Student accounts receive a personal QR code when created. The QR itself contains only a private random token; scanning it for an approved event returns the student's full name, USN, section, program, adviser, ID photo, and the event validity period.
+- Personal ID and event-pass QR codes are generated as 1024×1024 PNGs for clear screen scanning. Existing smaller personal QR images are upgraded automatically when a student dashboard loads.
 - Event-specific student QR passes remain visible as read-only records in Event History after the event; scans are rejected outside the event's valid check-in period.
 - Only the event's submitting teacher, an additional authorized active teacher, or an authorized student representative can scan QR codes. Hosts manage additional scanners on their event card. Camera scanning requires HTTPS (or localhost) and camera permission.
 - Authenticated student, teacher/staff, and admin dashboards display an event-invitation bell; visitors do not receive account notifications.
 - Event hosts and their authorized scanners can review attendance rosters from the event card. Admins can review rosters from Events or an approved event on the Schedule calendar but cannot scan attendance.
-- QR image generation and camera scanning use browser-loaded QR libraries; camera scanning requires HTTPS (or localhost) and camera permission.
+- QR image generation and camera scanning use browser-loaded QR libraries; camera scanning requires HTTPS (or localhost) and camera permission. Campus assistant chatbots use local venue and reservation data when the optional Gemini API key is not configured.
 - A dedicated loading indicator appears only while signing in or out; regular page navigation does not show a system-wide blocking loader.
 
 Do not copy SQL statements into the database without reviewing them first. The SQL dump contains schema definitions, retained user accounts, and campus venue records; activity tables start empty.

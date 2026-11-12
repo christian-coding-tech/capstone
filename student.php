@@ -17,7 +17,7 @@ $student_name = $_SESSION['user_name'];
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/teacher.css">
     <link rel="stylesheet" href="css/dashboard-polish.css">
-    <link rel="stylesheet" href="css/system-ui.css?v=20261018">
+    <link rel="stylesheet" href="css/system-ui.css?v=20261112-3">
     <link rel="stylesheet" href="css/action-loading.css">
     <title>Student Dashboard — ACLC Fatima</title>
 </head>
@@ -136,5 +136,6 @@ $student_name = $_SESSION['user_name'];
     </div>
     <script src="js/action-loading.js"></script>
     <script src="js/release-announcement.js"></script>
+    <script src="js/page-transition.js"></script>
 </body>
 </html>

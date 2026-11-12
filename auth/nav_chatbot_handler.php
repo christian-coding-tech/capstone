@@ -100,7 +100,7 @@ if ($directoryRole !== null) {
         exit;
     }
 
-    $personQuery = $pdo->prepare('SELECT full_name, course, section, department FROM users WHERE role = ? AND status = \'active\' AND LOWER(full_name) = LOWER(?) LIMIT 1');
+    $personQuery = $pdo->prepare('SELECT full_name, course, section, department, id_photo FROM users WHERE role = ? AND status = \'active\' AND LOWER(full_name) = LOWER(?) LIMIT 1');
     $personQuery->execute([$directoryRole, $searchName]);
     $person = $personQuery->fetch(PDO::FETCH_ASSOC);
     if (!$person) {
@@ -114,6 +114,7 @@ if ($directoryRole !== null) {
         'program' => $person['course'],
         'section' => $person['section'],
         'department' => $person['department'],
+        'id_photo' => $person['id_photo'],
     ];
     $details = array_filter([$person['course'], $person['section'], $person['department']]);
     $reply = $person['full_name'] . ' is an active ' . $directoryRole . ' account.'
@@ -159,7 +160,7 @@ if ($apiKey !== '' && function_exists('curl_init')) {
         'contents' => [['role' => 'user', 'parts' => [['text' => $message]]]],
         'generationConfig' => ['maxOutputTokens' => 400, 'temperature' => 0.4]
     ]);
-    $ch = curl_init('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=' . rawurlencode($apiKey));
+    $ch = curl_init('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=' . rawurlencode($apiKey));
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_POST => true,
@@ -170,7 +171,8 @@ if ($apiKey !== '' && function_exists('curl_init')) {
     ]);
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
+    $curlError = curl_error($ch);
+    unset($ch);
     if ($response !== false && $httpCode === 200) {
         $data = json_decode($response, true);
         $reply = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
@@ -178,6 +180,9 @@ if ($apiKey !== '' && function_exists('curl_init')) {
             echo json_encode(['success' => true, 'reply' => $reply, 'source' => 'ai']);
             exit;
         }
+        error_log('Navigation assistant API returned an invalid response.');
+    } else {
+        error_log('Navigation assistant API request failed: ' . ($curlError ?: 'HTTP ' . $httpCode));
     }
 }
 
