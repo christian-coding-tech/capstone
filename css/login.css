@@ -1497,16 +1497,17 @@ body::before {
     min-height: 420px;
     padding: clamp(24px, 4vw, 40px);
     overflow: hidden;
-    border: 1px solid #c5e1f1;
+    border: 1px solid rgba(125, 196, 245, 0.62);
     border-radius: 28px;
     background:
-        radial-gradient(ellipse at 82% 18%, rgba(166, 224, 255, 0.7), transparent 34%),
-        linear-gradient(145deg, #f8fcff, #e5f4fc);
-    color: var(--landing-blue-dark, #125a9b);
+        radial-gradient(ellipse at 82% 18%, rgba(166, 224, 255, 0.76), transparent 34%),
+        linear-gradient(145deg, #f8fcff 0%, #e5f4fc 58%, #d7edfb 100%);
+    color: #125a9b;
     text-align: left;
     box-shadow: 0 28px 68px rgba(45, 101, 140, 0.14);
     cursor: pointer;
-    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    touch-action: manipulation;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease;
 }
 .model-toggle::after {
     position: absolute;
@@ -1522,10 +1523,13 @@ body::before {
 }
 .model-toggle:hover {
     transform: translateY(-3px);
-    border-color: #9dcce5;
-    box-shadow: 0 34px 78px rgba(45, 101, 140, 0.2);
+    border-color: #69b4e2;
+    box-shadow: 0 34px 78px rgba(45, 101, 140, 0.24);
 }
+.model-toggle:active { transform: translateY(-1px) scale(0.995); }
 .model-toggle-icon {
+    position: relative;
+    z-index: 1;
     display: grid;
     width: 64px;
     height: 64px;
@@ -1537,7 +1541,7 @@ body::before {
     font-size: 1.8rem;
     box-shadow: 0 12px 26px rgba(45, 101, 140, 0.12);
 }
-.model-toggle-copy { display: grid; gap: 10px; max-width: 380px; }
+.model-toggle-copy { position: relative; z-index: 1; display: grid; gap: 10px; max-width: 380px; }
 .model-toggle-copy strong {
     color: #173c59;
     font-size: clamp(1.7rem, 3vw, 2.45rem);
@@ -1550,15 +1554,26 @@ body::before {
     line-height: 1.65;
 }
 .model-toggle-action {
+    position: relative;
+    z-index: 1;
     display: inline-flex;
     align-items: center;
-    gap: 12px;
-    color: #1769b2;
+    justify-content: center;
+    gap: 10px;
+    min-height: 46px;
+    padding: 0 18px;
+    border: 1px solid #1769b2;
+    border-radius: 999px;
+    background: #1769b2;
+    color: #fff;
     font-size: 0.9rem;
     font-weight: 700;
     letter-spacing: 0.02em;
+    box-shadow: 0 8px 20px rgba(23, 105, 178, 0.22);
+    transition: background 0.2s ease, box-shadow 0.2s ease;
 }
 .model-toggle-action i { transition: transform 0.2s ease; }
+.model-toggle:hover .model-toggle-action { background: #10558f; box-shadow: 0 10px 24px rgba(23, 105, 178, 0.3); }
 .model-toggle:hover .model-toggle-action i { transform: translateX(4px); }
 .model-toggle:focus-visible {
     outline: 3px solid rgba(37, 139, 209, 0.45);

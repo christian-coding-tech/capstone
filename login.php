@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/login.css">
+    <link rel="stylesheet" href="css/login.css?v=20261116-1">
     <link rel="stylesheet" href="css/system-ui.css?v=20261112-3">
     <link rel="stylesheet" href="css/action-loading.css">
     <title>ACLC Fatima Campus</title>
@@ -34,6 +34,7 @@
         <main class="login-card">
             <div class="content-wrapper">
                 <div class="login-image" id="modelContainer">
+                    <div class="model-eyebrow"><i class="fa-solid fa-cube"></i> Explore the campus</div>
                     <button class="model-toggle" id="modelToggle" type="button" aria-controls="modelModal" aria-expanded="false">
                         <span class="model-toggle-icon"><i class="fa-solid fa-cube" aria-hidden="true"></i></span>
                         <span class="model-toggle-copy">

@@ -39,6 +39,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Keep the 3D preview usable independently of the other landing-page controls.
+    const modelToggle = document.getElementById('modelToggle');
+    const modelModal  = document.getElementById('modelModal');
+    const modelClose  = document.getElementById('modelClose');
+
+    function closeModelModal() {
+        closeModal(modelModal);
+        modelToggle.setAttribute('aria-expanded', 'false');
+        modelToggle.focus();
+    }
+
+    if (modelToggle && modelModal && modelClose) {
+        modelToggle.addEventListener('click', () => {
+            modelToggle.setAttribute('aria-expanded', 'true');
+            openModal(modelModal);
+            modelClose.focus();
+        });
+        modelClose.addEventListener('click', closeModelModal);
+        modelModal.addEventListener('click', event => {
+            if (event.target === modelModal) closeModelModal();
+        });
+    }
+
     // ── Login modal ──
     const loginModal  = document.getElementById('loginModal');
     const loginToggle = document.getElementById('loginToggle');
@@ -151,25 +174,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const navMinimize = document.getElementById('navChatbotMinimize');
     const navTab      = document.getElementById('navChatbotTab');
     const navReplies  = document.getElementById('navQuickReplies');
-    const modelToggle = document.getElementById('modelToggle');
-    const modelModal  = document.getElementById('modelModal');
-    const modelClose  = document.getElementById('modelClose');
-
-    modelToggle.addEventListener('click', () => {
-        modelToggle.setAttribute('aria-expanded', 'true');
-        openModal(modelModal);
-        modelClose.focus();
-    });
-    function closeModelModal() {
-        closeModal(modelModal);
-        modelToggle.setAttribute('aria-expanded', 'false');
-        modelToggle.focus();
-    }
-    modelClose.addEventListener('click', closeModelModal);
-    modelModal.addEventListener('click', event => {
-        if (event.target === modelModal) closeModelModal();
-    });
-
     let navActive = false;
 
     let navState = {
