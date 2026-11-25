@@ -701,54 +701,6 @@ body::before {
     .nav-close-btn { top: 16px; left: 16px; padding: 9px 14px; font-size: 0.82rem; }
 }
 /* ── Navigation Mode ── */
-.nav-blur-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(5, 12, 28, 0.7);
-    backdrop-filter: blur(8px);
-    z-index: 10;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.5s ease;
-}
-.nav-blur-overlay.active {
-    opacity: 1;
-    pointer-events: all;
-}
-.nav-close-btn {
-    position: fixed;
-    top: 24px;
-    left: 24px;
-    z-index: 60;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 18px;
-    border-radius: 12px;
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.18);
-    color: #eef6ff;
-    font-size: 0.88rem;
-    font-weight: 500;
-    font-family: 'Inter', sans-serif;
-    cursor: pointer;
-    backdrop-filter: blur(8px);
-    transition: background 0.2s ease;
-}
-.nav-close-btn:hover {
-    background: rgba(220,60,60,0.25);
-    border-color: rgba(220,60,60,0.4);
-    color: #f4a0a0;
-}
-.model-frame.nav-centered {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) !important;
-    z-index: 20;
-    /* Keep original model-frame width/height — do not resize when entering nav mode */
-    transition: all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
 .nav-chatbot-panel {
     position: fixed;
     bottom: 32px;
@@ -1618,8 +1570,42 @@ body::before {
     min-height: 360px;
     border-radius: 20px;
 }
+.model-experience {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.9fr);
+    align-items: stretch;
+    gap: 16px;
+}
+.model-experience .model-frame {
+    width: 100%;
+}
+.model-experience .nav-chatbot-panel {
+    position: relative;
+    inset: auto;
+    z-index: 1;
+    width: 100%;
+    height: min(66vh, 680px);
+    min-height: 360px;
+    max-height: 680px;
+    overflow: hidden;
+    border-color: #cfe3f0;
+    background: rgba(255,255,255,0.98);
+    box-shadow: 0 18px 44px rgba(38, 89, 124, 0.14);
+}
+.model-experience .nav-chatbot-messages { min-height: 0; }
+.model-experience .nav-chatbot-tab {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    z-index: 3;
+}
 .model-modal-box .model-preview { height: 100%; min-height: 0; }
-.model-modal-box .model-label { font-size: 0.78rem; }
+.model-modal-box .model-label { bottom: 92px; font-size: 0.78rem; }
+.model-modal-box .model-zoom-controls { bottom: 92px; }
+.model-navigation-status { margin: 12px 0 0; color: #607d98; font-size: 0.78rem; }
+.model-preview { touch-action: none; cursor: grab; }
+.model-preview.is-dragging { cursor: grabbing; }
 .model-modal-close { z-index: 2; }
 #modelModal.active .model-modal-box { animation: loginFormReveal 0.42s cubic-bezier(0.2, 0.75, 0.25, 1) both; }
 #modelModal.active .model-modal-heading,
@@ -1687,6 +1673,18 @@ body::before {
         height: clamp(260px, 55dvh, 520px);
         min-height: 0;
         border-radius: 16px;
+    }
+    .model-experience {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 12px;
+    }
+    .model-experience .model-frame {
+        height: min(42dvh, 360px);
+        min-height: 220px;
+    }
+    .model-experience .nav-chatbot-panel {
+        height: 380px;
+        min-height: 340px;
     }
     .model-modal-box .model-label { left: 10px; bottom: 60px; max-width: calc(100% - 20px); }
     .form-group input,

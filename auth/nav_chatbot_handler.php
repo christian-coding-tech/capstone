@@ -44,6 +44,39 @@ $normalizedMessage = $normalize($message);
 $contextDestination = $normalize((string) ($navContext['destination'] ?? ''));
 $contextType = strtolower((string) ($navContext['destinationType'] ?? ''));
 
+$roomNumber = null;
+if (preg_match('/\b(?:room|classroom)\s*#?\s*([1-5]\d{2})\b/i', $message, $roomMatch)) {
+    $roomNumber = (int) $roomMatch[1];
+} elseif ($contextType === 'room' && preg_match('/\b([1-5]\d{2})\b/', $contextDestination, $roomMatch)) {
+    $roomNumber = (int) $roomMatch[1];
+}
+
+if ($roomNumber !== null) {
+    $floorNumber = (int) floor($roomNumber / 100);
+    $floorNames = [1 => '1st', 2 => '2nd', 3 => '3rd', 4 => '4th', 5 => '5th'];
+    $floorName = $floorNames[$floorNumber];
+    $currentLocation = trim((string) ($navContext['currentLocation'] ?? ''));
+    $currentFloor = trim((string) ($navContext['floor'] ?? ''));
+
+    if (strcasecmp($currentLocation, 'Main Building') === 0) {
+        $start = $currentFloor !== '' ? "From the {$currentFloor} of the Main Building, " : '';
+        $reply = "{$start}go to the {$floorName} floor and follow the room signs to Room {$roomNumber}. Room {$roomNumber} is on the {$floorName} floor.";
+    } elseif ($currentLocation !== '') {
+        $reply = "From {$currentLocation}, head to the Main Building and go to the {$floorName} floor. Follow the room signs to Room {$roomNumber}; it is on the {$floorName} floor.";
+    } else {
+        $reply = "Room {$roomNumber} is on the {$floorName} floor of the Main Building.";
+    }
+
+    echo json_encode([
+        'success' => true,
+        'reply' => $reply,
+        'source' => 'local',
+        'destination' => "Room {$roomNumber}",
+        'destinationFloor' => $floorName . ' Floor'
+    ]);
+    exit;
+}
+
 $matchedLocation = null;
 foreach ($locations as $key => $location) {
     $normalizedKey = $normalize($key);

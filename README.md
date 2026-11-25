@@ -9,7 +9,7 @@ The system provides these main features:
 - Campus navigation with suggested assistant prompts, local answers for campus facilities and approved events, and a guided route planner.
 - Campus map previews, route markers, landmark selection, zooming, panning, and facility previews.
 - Teacher and student directory lookups use active database accounts and are available only to signed-in teachers and administrators.
-- Interactive 3D campus model on the landing page.
+- Interactive 3D campus navigation with clickable campus/room waypoints, room model switching, zoom, and 360-degree drag-to-orbit controls.
 - Student and teacher reservation workflows.
 - Course-targeted campus events, student event history, personal student QR codes, event QR attendance, and host attendance tracking.
 - Event hosts can authorize additional active teachers or student representatives to scan attendance QR codes.
@@ -43,6 +43,7 @@ css/                   Page stylesheets
 js/                    Page JavaScript
 img/                   Images and campus media
 ACLC3.glb              3D campus model
+3D/Air_Conditioned_Room.glb  Air-conditioned room waypoint model
 aclc_campus.sql        Database schema with retained account and venue records
 ```
 

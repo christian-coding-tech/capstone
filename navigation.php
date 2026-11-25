@@ -217,7 +217,7 @@
     </button>
 
     <script src="js/page-transition.js"></script>
-    <script src="js/navigation.js"></script>
+    <script src="js/navigation.js?v=<?= filemtime(__DIR__ . '/js/navigation.js') ?>"></script>
     <script src="js/events-calendar.js"></script>
 </body>
 </html>

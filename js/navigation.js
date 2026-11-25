@@ -65,7 +65,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showFacilityPreview(context) {
         const destination = context.destination || 'Room or facility';
-        const floor = context.floor ? ` - ${context.floor}` : '';
+        const destinationFloor = context.destinationFloor || context.floor;
+        const floor = destinationFloor ? ` - ${destinationFloor}` : '';
         facilitySign.textContent = `${destination}${floor}`.toUpperCase();
         facilityCaption.textContent = `${destination}${floor} - interior sample view`;
         facilityPreview.dataset.scene = 'facility';
@@ -97,15 +98,17 @@ document.addEventListener('DOMContentLoaded', () => {
         mapViewport.classList.remove('is-facility');
     }
 
-    function getMapPoint(value, context = {}) {
+    function getMapPoint(value, context = {}, isDestination = false) {
         const name = String(value || '').toLowerCase();
+        const floor = isDestination ? context.destinationFloor : context.floor;
+        const floorNumber = Number.parseInt(String(floor || ''), 10);
+        if (Number.isFinite(floorNumber) && floorNumber >= 1 && floorNumber <= 5
+            && (isDestination || name.includes('main building'))) {
+            return [54, 24 + floorNumber * 7];
+        }
+
         const knownPoint = Object.entries(mapPoints).find(([key]) => name.includes(key) || key.includes(name));
         if (knownPoint) return knownPoint[1];
-
-        if (context.floor) {
-            const floorNumber = Number.parseInt(context.floor, 10);
-            if (Number.isFinite(floorNumber)) return [54, 24 + floorNumber * 7];
-        }
 
         if (context.destinationType === 'Teacher' || context.destinationType === 'Room') return [54, 45];
         return [54, 40];
@@ -122,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!context || !context.currentLocation || !context.destination) return;
 
         const start = getMapPoint(context.currentLocation, context);
-        const destination = getMapPoint(context.destination, context);
+        const destination = getMapPoint(context.destination, context, true);
         const bend = [start[0] + (destination[0] - start[0]) * 0.5, start[1]];
 
         mapRouteLine.setAttribute('points', [start, bend, destination].map(point => point.join(',')).join(' '));
@@ -138,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
         mapLocationDescription.textContent = 'The highlighted path shows the suggested route from your location to the destination.';
         routeBrief.hidden = false;
         routeBriefTitle.textContent = context.destination;
-        routeBriefText.textContent = `${context.currentLocation}${context.floor ? `, ${context.floor}` : ''} to your selected destination.`;
+        routeBriefText.textContent = `${context.currentLocation}${context.floor ? `, ${context.floor}` : ''} to ${context.destination}${context.destinationFloor ? ` (${context.destinationFloor})` : ''}.`;
         routeBriefBadge.textContent = isFacilityResult(context) ? 'FACILITY' : 'CAMPUS';
         mapStatus.innerHTML = '<i class="fa-solid fa-circle"></i> Route ready';
     }
@@ -340,6 +343,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return data.reply;
         } catch {
             const normalized = userMessage.toLowerCase();
+            const roomMatch = userMessage.match(/\b(?:room|classroom)\s*#?\s*([1-5]\d{2})\b/i);
+            if (roomMatch) {
+                const floor = getRoomFloor(`Room ${roomMatch[1]}`);
+                return `Room ${roomMatch[1]} is on the ${floor} of the Main Building.`;
+            }
             const offlineLocations = {
                 'registrar': 'The Registrar is on the ground floor of the Main Building.',
                 'cashier': 'The Cashier is on the ground floor of the Main Building.',
@@ -359,6 +367,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function answerAssistantQuestion(question) {
+        const roomMatch = question.match(/\b(?:room|classroom)\s*#?\s*([1-5]\d{2})\b/i);
+        if (roomMatch) {
+            await beginRoomNavigation(`Room ${roomMatch[1]}`);
+            return;
+        }
+
         const directoryRequest = question.match(/^find an active (teacher|student)$/i);
         pendingDirectoryRole = directoryRequest ? directoryRequest[1].toLowerCase() : null;
         input.disabled = true;
@@ -371,13 +385,101 @@ document.addEventListener('DOMContentLoaded', () => {
             'Find an active teacher',
             'Find an active student',
             'What events are today?',
+            'Find a room',
             'Plan a route'
-        ], option => option === 'Plan a route' ? beginRoutePlanning() : answerAssistantQuestion(option));
+        ], option => {
+            if (option === 'Plan a route') beginRoutePlanning();
+            else if (option === 'Find a room') beginRoomNavigation();
+            else answerAssistantQuestion(option);
+        });
         input.disabled = false;
+    }
+
+    function getRoomFloor(room) {
+        const match = String(room || '').match(/\b(?:room|classroom)\s*#?\s*([1-5]\d{2})\b/i)
+            || String(room || '').match(/\b([1-5]\d{2})\b/);
+        if (!match) return null;
+        const floorNames = { 1: '1st Floor', 2: '2nd Floor', 3: '3rd Floor', 4: '4th Floor', 5: '5th Floor' };
+        return floorNames[Number(match[1][0])];
+    }
+
+    async function beginRoomNavigation(destination = '') {
+        navContext = { currentLocation: null, floor: null, destination: null, destinationType: 'Room' };
+        navContext.destination = destination || null;
+        navContext.destinationFloor = getRoomFloor(destination);
+        input.disabled = true;
+        if (destination) {
+            await askRoomStartingPoint();
+        } else {
+            await botSay('Which room are you looking for? I can find its floor and show you a route.', 400);
+            input.disabled = false;
+            input.dataset.expecting = 'room-destination';
+            input.placeholder = 'Enter a room number, e.g. Room 301';
+            input.focus();
+        }
+    }
+
+    async function askRoomStartingPoint() {
+        await botSay(navContext.destination
+            ? `I'll find <strong>${escapeHtml(navContext.destination)}</strong> and determine its floor. Where are you starting from?`
+            : 'Where are you starting from?', 400);
+        showReplies(['Main Building', 'Cafeteria', 'Basketball Court', 'Parking Lot', 'Gate / Guardhouse'], selectRoomStartingPoint);
+        input.disabled = false;
+    }
+
+    async function selectRoomStartingPoint(location) {
+        navContext.currentLocation = location;
+        showSamplePreview(location);
+        mapLocationName.textContent = location;
+        mapLocationDescription.textContent = 'Starting area selected for your room route.';
+        mapStatus.innerHTML = '<i class="fa-solid fa-circle"></i> Starting area selected';
+
+        if (location === 'Main Building') {
+            await botSay('Which floor are you starting from?', 400);
+            showReplies(['1st Floor', '2nd Floor', '3rd Floor', '4th Floor', '5th Floor'], async floor => {
+                navContext.floor = floor;
+                await continueRoomNavigation();
+            });
+            return;
+        }
+
+        await continueRoomNavigation();
+    }
+
+    async function continueRoomNavigation() {
+        if (!navContext.destination) {
+            await botSay('Which room are you looking for? Enter its room number, for example Room 301.', 400);
+            input.disabled = false;
+            input.dataset.expecting = 'room-destination';
+            input.placeholder = 'Enter a room number, e.g. Room 301';
+            input.focus();
+            return;
+        }
+        await routeToRoom(navContext.destination);
+    }
+
+    async function routeToRoom(destination) {
+        const destinationFloor = getRoomFloor(destination);
+        const context = { ...navContext, destination, destinationFloor };
+        const userMsg = `I am at ${context.currentLocation}${context.floor ? `, ${context.floor}` : ''}. I am looking for Room: ${destination}. Give me directions.`;
+        input.disabled = true;
+        showTyping();
+        const reply = await askNavAI(userMsg, context);
+        removeTyping();
+        appendMsg(reply, 'bot');
+        navContext = context;
+        drawRoute(navContext);
+        input.disabled = false;
+        input.placeholder = 'Ask about campus, directions, or people...';
+        showReplies(['Find another room', 'Plan a route'], option => {
+            if (option === 'Find another room') beginRoomNavigation();
+            else beginRoutePlanning();
+        });
     }
 
     async function beginRoutePlanning() {
         navContext = { currentLocation: null, floor: null, destination: null };
+        input.placeholder = 'Ask about campus, directions, or people...';
         await botSay('Where are you starting from?', 400);
         showReplies(['Main Building', 'Cafeteria', 'Basketball Court', 'Parking Lot', 'Gate / Guardhouse'], async location => {
             navContext.currentLocation = location;
@@ -418,8 +520,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 'Find an active teacher',
                 'Find an active student',
                 'What events are today?',
+                'Find a room',
                 'Plan a route'
-            ], option => option === 'Plan a route' ? beginRoutePlanning() : answerAssistantQuestion(option));
+            ], option => {
+                if (option === 'Plan a route') beginRoutePlanning();
+                else if (option === 'Find a room') beginRoomNavigation();
+                else answerAssistantQuestion(option);
+            });
         }
 
         input.disabled = false;
@@ -469,18 +576,33 @@ document.addEventListener('DOMContentLoaded', () => {
             delete input.dataset.expecting;
             showTyping();
 
+            const destinationFloor = navContext.destinationType === 'Room' ? getRoomFloor(text) : null;
             const userMsg = `I am at ${navContext.currentLocation}${navContext.floor ? `, ${navContext.floor}` : ''}. I am looking for ${navContext.destinationType}: ${text}. Give me directions.`;
-            const context = { ...navContext, destination: text };
+            const context = { ...navContext, destination: text, destinationFloor };
             const reply   = await askNavAI(userMsg, context);
 
             removeTyping();
             appendMsg(reply, 'bot');
-            navContext.destination = text;
+            navContext = context;
             drawRoute(navContext);
 
             await new Promise(r => setTimeout(r, 800));
             await botSay('Did you find what you were looking for?', 600);
             showReplies(['Yes, I found it! 👍', 'No, I need more help'], handleDoneCheck);
+        } else if (input.dataset.expecting === 'room-destination') {
+            delete input.dataset.expecting;
+            const roomMatch = text.match(/\b(?:room|classroom)\s*#?\s*([1-5]\d{2})\b/i)
+                || text.match(/\b([1-5]\d{2})\b/);
+            if (!roomMatch) {
+                await botSay('Please enter a three-digit room number from 100 to 599 so I can determine its floor.', 400);
+                input.disabled = false;
+                input.dataset.expecting = 'room-destination';
+                input.focus();
+                return;
+            }
+            navContext.destination = `Room ${roomMatch[1]}`;
+            navContext.destinationFloor = getRoomFloor(navContext.destination);
+            await askRoomStartingPoint();
         } else {
             const question = pendingDirectoryRole ? `Find ${pendingDirectoryRole} ${text}` : text;
             await answerAssistantQuestion(question);

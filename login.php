@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/login.css?v=20261116-1">
+    <link rel="stylesheet" href="css/login.css?v=<?= filemtime(__DIR__ . '/css/login.css') ?>">
     <link rel="stylesheet" href="css/system-ui.css?v=20261112-3">
     <link rel="stylesheet" href="css/action-loading.css">
     <title>ACLC Fatima Campus</title>
@@ -16,9 +16,6 @@
 <body>
     <div class="background-shape shape1"></div>
     <div class="background-shape shape2"></div>
-
-    <!-- Page blur overlay -->
-    <div class="nav-blur-overlay" id="navBlurOverlay"></div>
 
     <div class="page-shell" id="pageShell">
         <header class="page-header">
@@ -57,28 +54,49 @@
         </main>
     </div>
 
-    <!-- Navigation mode close button -->
-    <button class="nav-close-btn" id="navCloseBtn" style="display:none;">
-        <i class="fa-solid fa-xmark"></i> Exit Navigation
-    </button>
-
-    <!-- 3D campus modal -->
+    <!-- 3D campus preview and assistant -->
     <div class="modal-overlay model-modal-overlay" id="modelModal" hidden>
         <section class="model-modal-box" role="dialog" aria-modal="true" aria-labelledby="modelModalTitle">
             <button class="modal-close model-modal-close" id="modelClose" type="button" aria-label="Close 3D campus preview">
                 <i class="fa-solid fa-xmark" aria-hidden="true"></i>
             </button>
             <div class="model-modal-heading">
-                <p class="login-kicker">Interactive campus model</p>
+                <p class="login-kicker">3D campus preview</p>
                 <h2 id="modelModalTitle">ACLC Fatima Campus</h2>
-                <p>Explore the campus model. Use the controls to zoom in or out.</p>
+                <p>Explore the campus model or ask the Campus Assistant to find a room and guide you there.</p>
             </div>
-            <div class="model-frame" id="modelFrame">
-                <div class="model-glow"></div>
-                <canvas id="threeCanvas" class="model-preview"></canvas>
-                <div class="model-loading" id="modelLoading"><span></span> Loading campus model</div>
-                <div class="model-label" id="modelLabel">ACLC Fatima Campus</div>
+            <div class="model-experience">
+                <div class="model-frame" id="modelFrame">
+                    <div class="model-glow"></div>
+                    <canvas id="threeCanvas" class="model-preview"></canvas>
+                    <div class="model-loading" id="modelLoading"><span></span> Loading campus model</div>
+                    <div class="model-label" id="modelLabel">ACLC Fatima Campus</div>
+                </div>
+                <div class="nav-chatbot-panel" id="navChatbotPanel" style="display:none;">
+                    <div class="nav-chatbot-header">
+                        <div class="nav-chatbot-title">
+                            <i class="fa-solid fa-robot"></i>
+                            <span>Campus Assistant</span>
+                        </div>
+                        <button class="nav-chatbot-minimize" id="navChatbotMinimize" type="button" aria-label="Minimize Campus Assistant">
+                            <i class="fa-solid fa-minus"></i>
+                        </button>
+                    </div>
+                    <div class="nav-chatbot-messages" id="navChatbotMessages"></div>
+                    <div class="nav-quick-replies" id="navQuickReplies"></div>
+                    <div class="nav-chatbot-input-wrap">
+                        <input type="text" id="navChatbotInput" placeholder="Type your answer..." aria-label="Message Campus Assistant">
+                        <button class="nav-chatbot-send" id="navChatbotSend" type="button" aria-label="Send message">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+                <button class="nav-chatbot-tab" id="navChatbotTab" type="button" style="display:none;">
+                    <i class="fa-solid fa-robot"></i>
+                    <span>Open Campus Assistant</span>
+                </button>
             </div>
+            <p class="model-navigation-status" id="modelNavigationStatus" role="status" aria-live="polite">Campus view · drag to rotate 360°</p>
         </section>
     </div>
 
@@ -138,36 +156,9 @@
         </div>
     </div>
 
-    <!-- Navigation Chatbot -->
-    <div class="nav-chatbot-panel" id="navChatbotPanel" style="display:none;">
-        <div class="nav-chatbot-header">
-            <div class="nav-chatbot-title">
-                <i class="fa-solid fa-robot"></i>
-                <span>Campus Assistant</span>
-            </div>
-            <button class="nav-chatbot-minimize" id="navChatbotMinimize">
-                <i class="fa-solid fa-minus"></i>
-            </button>
-        </div>
-        <div class="nav-chatbot-messages" id="navChatbotMessages"></div>
-        <div class="nav-quick-replies" id="navQuickReplies"></div>
-        <div class="nav-chatbot-input-wrap">
-            <input type="text" id="navChatbotInput" placeholder="Type your answer...">
-            <button class="nav-chatbot-send" id="navChatbotSend">
-                <i class="fa-solid fa-paper-plane"></i>
-            </button>
-        </div>
-    </div>
-
-    <!-- Navigation chatbot minimized tab -->
-    <button class="nav-chatbot-tab" id="navChatbotTab" style="display:none;">
-        <i class="fa-solid fa-robot"></i>
-        <span>Campus Assistant</span>
-    </button>
-
-    <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/examples/js/loaders/GLTFLoader.js"></script>
-    <script src="js/model_viewer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="js/model_viewer.js?v=<?= filemtime(__DIR__ . '/js/model_viewer.js') ?>"></script>
     <div class="action-loader" id="actionLoader" role="status" aria-live="polite" aria-hidden="true">
         <div class="action-loader-card">
             <div class="action-loader-spinner" aria-hidden="true"></div>
@@ -179,6 +170,6 @@
     </div>
     <script src="js/action-loading.js"></script>
     <script src="js/page-transition.js"></script>
-    <script src="js/login.js"></script>
+    <script src="js/login.js?v=<?= filemtime(__DIR__ . '/js/login.js') ?>"></script>
 </body>
 </html>

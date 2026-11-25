@@ -2,7 +2,6 @@
     const canvas = document.getElementById('threeCanvas');
     if (!canvas) return;
 
-    // ── Renderer ──
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputEncoding = THREE.sRGBEncoding || 3001;
@@ -11,15 +10,8 @@
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-    // ── Scene ──
     const scene = new THREE.Scene();
-
-    // ── Camera ──
     const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
-    camera.position.set(0, 0.8, 7.2);
-    camera.lookAt(0, 0, 0);
-
-    // ── Lights ──
     const ambient = new THREE.HemisphereLight(0xdff4ff, 0x203a56, 1.15);
     scene.add(ambient);
 
@@ -39,51 +31,190 @@
     rimLight.position.set(3, 5, -8);
     scene.add(rimLight);
 
-    // ── Load GLB ──
     const loader = new THREE.GLTFLoader();
     loader.crossOrigin = 'anonymous';
 
     const modelGroup = new THREE.Group();
+    modelGroup.position.set(5, -5, 0);
     scene.add(modelGroup);
 
+    const modelLoading = document.getElementById('modelLoading');
+    const modelLabel = document.getElementById('modelLabel');
+    const navigationStatus = document.getElementById('modelNavigationStatus');
+    const models = {
+        campus: { src: '3D/Aclc_Fatima_Campus.glb', label: 'ACLC Fatima Campus' },
+        room101: { src: '3D/Floor 1/Audio Comission Room 101.glb', label: 'Room 101' },
+        room102: { src: '3D/Floor 1/Collage Faculty Room 102.glb', label: 'Room 102' },
+        room103: { src: '3D/Floor 1/SHS Faculity Room 103.glb', label: 'Room 103' },
+        room104: { src: '3D/Floor 1/Admission Office 104.glb', label: 'Room 104' },
+        room105: { src: '3D/Floor 1/Conference Room 105.glb', label: 'Room 105' },
+        room106: { src: '3D/Floor 1/Finance Room 106.glb', label: 'Room 106' },
+        room107: { src: '3D/Floor 1/School Director Room 107.glb', label: 'Room 107' },
+        room108: { src: '3D/Floor 1/Managing Room 108.glb', label: 'Room 108' },
+        room109: { src: '3D/Floor 1/Guidance Office Room 109.glb', label: 'Room 109' },
+        room110: { src: '3D/Floor 1/Classroom 110.glb', label: 'Room 110' }
+    };
+
     let model = null;
-
-    let defaultCameraZ = camera.position.z;
-
-    // Zoom controls
-    let cameraZ = camera.position.z;
-    let targetCameraZ = cameraZ;
-    let minCameraZ = 2.8;
-    let maxCameraZ = 14;
+    let activeModel = 'campus';
+    let requestId = 0;
+    let cameraDistance = 7.2;
+    let targetCameraDistance = cameraDistance;
+    let defaultCameraDistance = cameraDistance;
+    let minCameraDistance = 2.8;
+    let maxCameraDistance = 14;
+    let cameraAzimuth = 0;
+    let cameraElevation = 0.1;
+    let defaultCameraElevation = cameraElevation;
     let zoomSlider = null;
+    let renderFrame = null;
+    let dragPointerId = null;
+    let previousPointerX = 0;
+    let previousPointerY = 0;
 
-    function clampCameraZ(distance) {
-        return Math.min(maxCameraZ, Math.max(minCameraZ, distance));
+    function clamp(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    function updateCamera() {
+        const horizontalDistance = cameraDistance * Math.cos(cameraElevation);
+        camera.position.set(
+            modelGroup.position.x + horizontalDistance * Math.sin(cameraAzimuth),
+            modelGroup.position.y + cameraDistance * Math.sin(cameraElevation),
+            modelGroup.position.z + horizontalDistance * Math.cos(cameraAzimuth)
+        );
+        camera.lookAt(modelGroup.position);
     }
 
     function syncZoomSlider() {
         if (!zoomSlider) return;
-        const ratio = Math.log(maxCameraZ / clampCameraZ(targetCameraZ)) / Math.log(maxCameraZ / minCameraZ);
+        const ratio = Math.log(maxCameraDistance / clamp(targetCameraDistance, minCameraDistance, maxCameraDistance))
+            / Math.log(maxCameraDistance / minCameraDistance);
         zoomSlider.value = String(Math.round(ratio * 100));
     }
 
     function setZoom(distance) {
-        targetCameraZ = clampCameraZ(distance);
+        targetCameraDistance = clamp(distance, minCameraDistance, maxCameraDistance);
         syncZoomSlider();
         render();
     }
 
-    (function createZoomControls(){
-        const frameEl = canvas.closest('.model-frame') || document.getElementById('modelFrame') || document.body;
-        if (!frameEl) return;
+    function disposeModel(object) {
+        object.traverse(node => {
+            if (!node.isMesh) return;
+            if (node.geometry) node.geometry.dispose();
+            const materials = Array.isArray(node.material) ? node.material : [node.material];
+            materials.forEach(material => {
+                if (!material) return;
+                Object.keys(material).forEach(key => {
+                    const value = material[key];
+                    if (value && value.isTexture) value.dispose();
+                });
+                material.dispose();
+            });
+        });
+    }
 
-        const wrap = document.createElement('div');
-        wrap.className = 'model-zoom-controls';
+    function loadModel(key) {
+        const config = models[key];
+        if (!config) return;
 
-        const btnZoomOut = document.createElement('button');
-        btnZoomOut.className = 'zoom-btn zoom-out';
-        btnZoomOut.title = 'Zoom out';
-        btnZoomOut.innerHTML = '<i class="fa-solid fa-minus"></i>';
+        const currentRequestId = ++requestId;
+        if (navigationStatus) navigationStatus.textContent = `Loading ${config.label}…`;
+        if (modelLoading) {
+            modelLoading.innerHTML = '<span></span> Loading 3D view';
+            modelLoading.classList.remove('is-hidden');
+        }
+
+        loader.load(config.src, gltf => {
+            if (currentRequestId !== requestId) {
+                disposeModel(gltf.scene);
+                return;
+            }
+
+            const nextModel = gltf.scene;
+            const box = new THREE.Box3().setFromObject(nextModel);
+            const center = box.getCenter(new THREE.Vector3());
+            const size = box.getSize(new THREE.Vector3());
+            const maxDimension = Math.max(size.x, size.y, size.z);
+            if (!Number.isFinite(maxDimension) || maxDimension <= 0) {
+                if (navigationStatus) navigationStatus.textContent = `Could not display ${config.label}.`;
+                if (modelLoading) modelLoading.classList.add('is-hidden');
+                return;
+            }
+
+            nextModel.position.sub(center);
+            const scale = 50 / maxDimension;
+            nextModel.scale.setScalar(scale);
+            nextModel.traverse(node => {
+                if (!node.isMesh) return;
+                node.castShadow = true;
+                node.receiveShadow = true;
+            });
+
+            if (model) {
+                modelGroup.remove(model);
+                disposeModel(model);
+            }
+            model = nextModel;
+            modelGroup.add(model);
+            activeModel = key;
+            cameraAzimuth = 0;
+
+            const fitDistance = (maxDimension * scale) / (2 * Math.tan((camera.fov * Math.PI) / 360));
+            minCameraDistance = Math.max(0.5, fitDistance * 0.45);
+            maxCameraDistance = Math.max(minCameraDistance * 2, fitDistance * 3.5);
+            defaultCameraDistance = fitDistance * 1.1;
+            defaultCameraElevation = Math.atan2(0.8, defaultCameraDistance);
+            targetCameraDistance = defaultCameraDistance;
+            cameraDistance = defaultCameraDistance;
+            cameraElevation = defaultCameraElevation;
+            syncZoomSlider();
+
+            if (modelLabel) modelLabel.textContent = config.label;
+            if (navigationStatus) navigationStatus.textContent = `${config.label} · drag to rotate 360°`;
+            if (modelLoading) modelLoading.classList.add('is-hidden');
+            render();
+        }, undefined, error => {
+            if (currentRequestId !== requestId) return;
+            console.warn(`3D model load error (${config.src}):`, error);
+            if (navigationStatus) navigationStatus.textContent = `Could not load ${config.label}. Please try again.`;
+            if (modelLoading) modelLoading.classList.add('is-hidden');
+        });
+    }
+
+    window.CampusModelViewer = {
+        showRoom(room) {
+            const roomMatch = String(room || '').match(/\b(?:room|classroom)\s*#?\s*(\d{3})\b/i)
+                || String(room || '').match(/\b(\d{3})\b/);
+            if (!roomMatch) return false;
+
+            const roomNumber = Number(roomMatch[1]);
+            const modelKey = `room${roomNumber}`;
+            if (!models[modelKey]) {
+                if (navigationStatus) navigationStatus.textContent = `No 3D model is available for Room ${roomNumber} yet.`;
+                return false;
+            }
+
+            loadModel(modelKey);
+            return true;
+        },
+        showCampus() {
+            loadModel('campus');
+        }
+    };
+
+    const frame = canvas.closest('.model-frame') || document.getElementById('modelFrame');
+    if (frame) {
+        const controls = document.createElement('div');
+        controls.className = 'model-zoom-controls';
+
+        const zoomOut = document.createElement('button');
+        zoomOut.className = 'zoom-btn zoom-out';
+        zoomOut.type = 'button';
+        zoomOut.title = 'Zoom out';
+        zoomOut.setAttribute('aria-label', 'Zoom out');
+        zoomOut.innerHTML = '<i class="fa-solid fa-minus"></i>';
 
         zoomSlider = document.createElement('input');
         zoomSlider.type = 'range';
@@ -91,116 +222,88 @@
         zoomSlider.max = '100';
         zoomSlider.value = '50';
         zoomSlider.className = 'zoom-slider';
+        zoomSlider.setAttribute('aria-label', '3D view zoom');
 
-        const btnZoomIn = document.createElement('button');
-        btnZoomIn.className = 'zoom-btn zoom-in';
-        btnZoomIn.title = 'Zoom in';
-        btnZoomIn.innerHTML = '<i class="fa-solid fa-plus"></i>';
-
-        wrap.appendChild(btnZoomOut);
-        wrap.appendChild(zoomSlider);
-        wrap.appendChild(btnZoomIn);
-        frameEl.appendChild(wrap);
-
-        function setFromSlider() {
-            const t = zoomSlider.value / 100;
-            // Logarithmic mapping keeps zoom responsive across differently sized models.
-            setZoom(maxCameraZ * Math.pow(minCameraZ / maxCameraZ, t));
-        }
-
-        zoomSlider.addEventListener('input', setFromSlider);
-        btnZoomIn.addEventListener('click', () => {
-            setZoom(targetCameraZ * 0.85);
-        });
-        btnZoomOut.addEventListener('click', () => {
-            setZoom(targetCameraZ / 0.85);
-        });
+        const zoomIn = document.createElement('button');
+        zoomIn.className = 'zoom-btn zoom-in';
+        zoomIn.type = 'button';
+        zoomIn.title = 'Zoom in';
+        zoomIn.setAttribute('aria-label', 'Zoom in');
+        zoomIn.innerHTML = '<i class="fa-solid fa-plus"></i>';
 
         const reset = document.createElement('button');
         reset.className = 'model-reset-btn';
-        reset.title = 'Reset model view';
         reset.type = 'button';
+        reset.title = 'Reset 3D view';
+        reset.setAttribute('aria-label', 'Reset 3D view');
         reset.innerHTML = '<i class="fa-solid fa-crosshairs"></i>';
-        wrap.appendChild(reset);
-        reset.addEventListener('click', () => {
-            setZoom(defaultCameraZ);
+
+        controls.append(zoomOut, zoomSlider, zoomIn, reset);
+        frame.appendChild(controls);
+
+        zoomSlider.addEventListener('input', () => {
+            const t = Number(zoomSlider.value) / 100;
+            setZoom(maxCameraDistance * Math.pow(minCameraDistance / maxCameraDistance, t));
         });
+        zoomIn.addEventListener('click', () => setZoom(targetCameraDistance * 0.85));
+        zoomOut.addEventListener('click', () => setZoom(targetCameraDistance / 0.85));
+        reset.addEventListener('click', () => {
+            cameraAzimuth = 0;
+            cameraElevation = defaultCameraElevation;
+            setZoom(defaultCameraDistance);
+        });
+    }
 
-        // wheel to zoom
-        canvas.addEventListener('wheel', (ev) => {
-            ev.preventDefault();
-            setZoom(targetCameraZ * Math.exp(Math.sign(ev.deltaY) * 0.12));
-        }, { passive: false });
-    })();
-
-    loader.load(
-        'ACLC3.glb',
-        function(gltf) {
-            model = gltf.scene;
-
-            // Center the model inside the group
-            const box    = new THREE.Box3().setFromObject(model);
-            const center = box.getCenter(new THREE.Vector3());
-            const size   = box.getSize(new THREE.Vector3());
-            const maxDim = Math.max(size.x, size.y, size.z);
-            const scale  = 50 / maxDim;
-
-            model.position.sub(center);
-            model.scale.setScalar(scale);
-
-            modelGroup.add(model);
-            modelGroup.position.set(5, -5, 0);
-
-            const fitDistance = (maxDim * scale) / (2 * Math.tan((camera.fov * Math.PI) / 360));
-            minCameraZ = Math.max(0.5, fitDistance * 0.45);
-            maxCameraZ = Math.max(minCameraZ * 2, fitDistance * 3.5);
-            cameraZ = fitDistance * 1.1;
-            targetCameraZ = cameraZ;
-            defaultCameraZ = cameraZ;
-            camera.position.set(modelGroup.position.x, modelGroup.position.y + 0.8, modelGroup.position.z + cameraZ);
-            camera.lookAt(modelGroup.position);
-            syncZoomSlider();
-
-            model.traverse(node => {
-                if (!node.isMesh) return;
-                node.castShadow = true;
-                node.receiveShadow = true;
-            });
-
-            // Hide label once loaded
-            const label = document.querySelector('.model-label');
-            if (label) label.textContent = 'ACLC Fatima Campus';
-            const loading = document.getElementById('modelLoading');
-            if (loading) loading.classList.add('is-hidden');
-            render();
-        },
-        function(progress) {
-            // Loading progress
-        },
-        function(error) {
-            console.warn('GLB load error:', error);
-            const label = document.querySelector('.model-label');
-            if (label) label.textContent = '3D model ready';
-            const loading = document.getElementById('modelLoading');
-            if (loading) loading.textContent = 'Preview unavailable';
+    window.addEventListener('campus:model-open', () => {
+        if (activeModel !== 'campus') {
+            loadModel('campus');
+            return;
         }
-    );
+        cameraAzimuth = 0;
+        cameraElevation = defaultCameraElevation;
+        setZoom(defaultCameraDistance);
+    });
 
-    // ── Resize handler ──
+    canvas.addEventListener('pointerdown', event => {
+        if (event.button !== 0 || dragPointerId !== null) return;
+        dragPointerId = event.pointerId;
+        previousPointerX = event.clientX;
+        previousPointerY = event.clientY;
+        canvas.classList.add('is-dragging');
+        canvas.setPointerCapture(event.pointerId);
+    });
+    canvas.addEventListener('pointermove', event => {
+        if (event.pointerId !== dragPointerId) return;
+        cameraAzimuth -= (event.clientX - previousPointerX) * 0.008;
+        cameraElevation = clamp(cameraElevation + (event.clientY - previousPointerY) * 0.006, -0.5, 1.25);
+        previousPointerX = event.clientX;
+        previousPointerY = event.clientY;
+        render();
+    });
+    function stopOrbit(event) {
+        if (event.pointerId !== dragPointerId) return;
+        dragPointerId = null;
+        canvas.classList.remove('is-dragging');
+        if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
+    }
+    canvas.addEventListener('pointerup', stopOrbit);
+    canvas.addEventListener('pointercancel', stopOrbit);
+    canvas.addEventListener('wheel', event => {
+        event.preventDefault();
+        setZoom(targetCameraDistance * Math.exp(Math.sign(event.deltaY) * 0.12));
+    }, { passive: false });
+
     function resize() {
-        const w = canvas.clientWidth;
-        const h = canvas.clientHeight;
-        if (!w || !h) return false;
-        if (canvas.width !== w || canvas.height !== h) {
-            renderer.setSize(w, h, false);
-            camera.aspect = w / h;
+        const width = canvas.clientWidth;
+        const height = canvas.clientHeight;
+        if (!width || !height) return false;
+        if (canvas.width !== width || canvas.height !== height) {
+            renderer.setSize(width, height, false);
+            camera.aspect = width / height;
             camera.updateProjectionMatrix();
         }
         return true;
     }
-
-    const lerp = (a, b, t) => a + (b - a) * t;
-    let renderFrame = null;
 
     function render() {
         if (renderFrame !== null) return;
@@ -208,12 +311,12 @@
             renderFrame = null;
             if (!resize()) return;
 
-            cameraZ = lerp(cameraZ, targetCameraZ, 0.12);
-            if (Math.abs(targetCameraZ - cameraZ) < 0.01) cameraZ = targetCameraZ;
-            camera.position.z = modelGroup.position.z + cameraZ;
+            cameraDistance += (targetCameraDistance - cameraDistance) * 0.12;
+            if (Math.abs(targetCameraDistance - cameraDistance) < 0.01) cameraDistance = targetCameraDistance;
+            updateCamera();
             renderer.render(scene, camera);
 
-            if (cameraZ !== targetCameraZ) render();
+            if (cameraDistance !== targetCameraDistance) render();
         });
     }
 
@@ -222,5 +325,6 @@
     } else {
         window.addEventListener('resize', render);
     }
+    loadModel('campus');
     render();
 })();

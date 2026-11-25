@@ -45,6 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modelClose  = document.getElementById('modelClose');
 
     function closeModelModal() {
+        exitNavMode();
         closeModal(modelModal);
         modelToggle.setAttribute('aria-expanded', 'false');
         modelToggle.focus();
@@ -54,6 +55,8 @@ document.addEventListener('DOMContentLoaded', () => {
         modelToggle.addEventListener('click', () => {
             modelToggle.setAttribute('aria-expanded', 'true');
             openModal(modelModal);
+            window.dispatchEvent(new Event('campus:model-open'));
+            enterNavMode();
             modelClose.focus();
         });
         modelClose.addEventListener('click', closeModelModal);
@@ -164,9 +167,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Navigation Mode ──
     // ══════════════════════════════════════
     const navBtn      = document.getElementById('navBtn');
-    const navBlur     = document.getElementById('navBlurOverlay');
-    const navCloseBtn = document.getElementById('navCloseBtn');
-    const modelFrame  = document.getElementById('modelFrame');
     const navPanel    = document.getElementById('navChatbotPanel');
     const navMessages = document.getElementById('navChatbotMessages');
     const navInput    = document.getElementById('navChatbotInput');
@@ -257,28 +257,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── Enter navigation mode ──
     function enterNavMode() {
+        if (navActive) return;
         navActive = true;
-        navBlur.classList.add('active');
-        modelFrame.classList.add('nav-centered');
-        navCloseBtn.style.display = 'flex';
         navInput.disabled = false;
-        setTimeout(() => {
-            navPanel.style.display = 'flex';
-            startNavFlow();
-        }, 700);
+        navPanel.style.display = 'flex';
+        startNavFlow();
     }
 
     // ── Exit navigation mode ──
     function exitNavMode() {
         navActive = false;
-        navBlur.classList.remove('active');
-        modelFrame.classList.remove('nav-centered');
-        navCloseBtn.style.display = 'none';
         navPanel.style.display    = 'none';
         navTab.style.display      = 'none';
         navMessages.innerHTML     = '';
         navReplies.innerHTML      = '';
         navState = { step: 'location', currentLocation: null, floor: null, destination: null };
+        navInput.value = '';
+        navInput.disabled = true;
     }
 
     navBtn.addEventListener('click', event => {
@@ -287,11 +282,8 @@ document.addEventListener('DOMContentLoaded', () => {
         navBtn.querySelector('i').className = 'fa-solid fa-spinner fa-spin';
         window.PageTransition.navigate('navigation.php');
     });
-    navCloseBtn.addEventListener('click', exitNavMode);
-    navBlur.addEventListener('click', exitNavMode);
     document.addEventListener('keydown', e => {
         if (e.key !== 'Escape') return;
-        if (navActive) exitNavMode();
         if (modelModal.classList.contains('active')) closeModelModal();
     });
 
@@ -378,10 +370,41 @@ document.addEventListener('DOMContentLoaded', () => {
         navRemoveTyping();
         navAppendMsg(reply, 'bot');
 
+        if (navState.destination === 'Room') {
+            const hasRoomModel = window.CampusModelViewer
+                && window.CampusModelViewer.showRoom(details);
+            navState.step = 'details';
+            await navBotSay(hasRoomModel
+                ? `I'm loading the 3D model for ${details} in the campus preview.`
+                : `I couldn't find a 3D model file for ${details}, but I can still show you the route.`, 500);
+            navShowReplies(['Show route on campus map', 'Find another room'], async option => {
+                if (option === 'Show route on campus map') {
+                    openNavigationMap(context, details, reply);
+                    return;
+                }
+
+                navState = {
+                    step: 'details',
+                    currentLocation: context.currentLocation,
+                    floor: context.floor,
+                    destination: 'Room'
+                };
+                await navBotSay('Which room would you like to find? (e.g. Room 101)', 400);
+                navInput.disabled = false;
+                navInput.focus();
+            });
+            navInput.disabled = false;
+            return;
+        }
+
         await new Promise(r => setTimeout(r, 800));
         await navBotSay('Redirecting you to the navigation page for more details...', 700);
         await new Promise(r => setTimeout(r, 1200));
 
+        openNavigationMap(context, details, reply);
+    }
+
+    function openNavigationMap(context, details, reply) {
         sessionStorage.setItem('navContext', JSON.stringify({
             ...context,
             details,
