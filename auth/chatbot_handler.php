@@ -151,7 +151,7 @@ if ($matchedVenue !== null) {
         }
     }
 } else {
-    $reply = 'I can help with venue availability and approved reservation schedules using campus records. Ask me about a venue, upcoming events, or today’s schedule. For building and room directions, use the Campus Navigation page.';
+    $reply = 'I can help with venue availability and approved reservation schedules using campus records. Ask me about a venue, upcoming events, or today’s schedule. For building and room directions, use Explore Campus on the landing page.';
 }
 
 echo json_encode(['success' => true, 'reply' => trim($reply), 'source' => 'local']);

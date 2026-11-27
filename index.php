@@ -46,9 +46,6 @@
                     <p class="login-kicker">Campus portal</p>
                     <h2 class="login-heading">What would you like to do?</h2>
                     <p class="login-copy">Find a place, explore campus events, or send us feedback.</p>
-                    <a href="navigation.php" class="login-btn nav-btn" id="navBtn">
-                        <i class="fa-solid fa-location-dot"></i>Explore campus
-                    </a>
                     <button class="login-btn feedback-btn" id="feedbackToggle">
                         <i class="fa-solid fa-clipboard-check"></i>Send feedback
                     </button>
@@ -66,17 +63,17 @@
                 <span class="overview-status"><i class="fa-solid fa-circle"></i> Portal online</span>
             </div>
             <div class="overview-grid">
-                <a class="overview-card" href="navigation.php">
+                <a class="overview-card" href="#modelToggle" data-open-campus-assistant>
                     <span class="overview-icon overview-blue"><i class="fa-solid fa-location-dot"></i></span>
                     <span><strong>Campus navigation</strong><small>Find buildings, rooms, facilities, and landmarks.</small></span>
                     <i class="fa-solid fa-arrow-up-right-from-square overview-arrow"></i>
                 </a>
-                <a class="overview-card" href="navigation.php">
+                <a class="overview-card" href="#modelToggle" data-open-campus-assistant>
                     <span class="overview-icon overview-green"><i class="fa-solid fa-compass"></i></span>
                     <span><strong>Explore key areas</strong><small>Preview the Main Building, Library, Court, and Cafeteria.</small></span>
                     <i class="fa-solid fa-arrow-up-right-from-square overview-arrow"></i>
                 </a>
-                <a class="overview-card" href="navigation.php#campusEventsTitle">
+                <a class="overview-card" href="#campusEventsTitle">
                     <span class="overview-icon overview-blue"><i class="fa-solid fa-calendar-days"></i></span>
                     <span><strong>Campus events</strong><small>Browse the campus calendar and upcoming activities.</small></span>
                     <i class="fa-solid fa-arrow-up-right-from-square overview-arrow"></i>
@@ -94,6 +91,23 @@
                 <span><i class="fa-solid fa-basketball"></i> Activity Court</span>
                 <span><i class="fa-solid fa-utensils"></i> Cafeteria</span>
             </div>
+        </section>
+
+        <section class="landing-events" aria-labelledby="campusEventsTitle">
+            <div class="landing-events-heading">
+                <div>
+                    <p class="login-kicker">Campus calendar</p>
+                    <h2 id="campusEventsTitle">Upcoming campus events</h2>
+                </div>
+                <i class="fa-solid fa-calendar-days" aria-hidden="true"></i>
+            </div>
+            <div class="public-calendar-toolbar">
+                <button type="button" id="publicCalPrev" aria-label="Previous month"><i class="fa-solid fa-chevron-left"></i></button>
+                <strong id="publicCalMonth"></strong>
+                <button type="button" id="publicCalNext" aria-label="Next month"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+            <div class="public-calendar" id="publicCalendar" aria-label="Campus events calendar"></div>
+            <div class="public-calendar-events" id="publicCalendarEvents" aria-live="polite"><p>Select a date to see its events.</p></div>
         </section>
 
         <section class="update-log" aria-labelledby="updateLogTitle">
@@ -247,5 +261,6 @@
     <script src="js/action-loading.js"></script>
     <script src="js/page-transition.js"></script>
     <script src="js/login.js?v=<?= filemtime(__DIR__ . '/js/login.js') ?>"></script>
+    <script src="js/events-calendar.js?v=<?= filemtime(__DIR__ . '/js/events-calendar.js') ?>"></script>
 </body>
 </html>

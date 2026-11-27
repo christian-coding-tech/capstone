@@ -45,16 +45,47 @@ $contextDestination = $normalize((string) ($navContext['destination'] ?? ''));
 $contextType = strtolower((string) ($navContext['destinationType'] ?? ''));
 
 $roomNumber = null;
-if (preg_match('/\b(?:room|classroom)\s*#?\s*([1-5]\d{2})\b/i', $message, $roomMatch)) {
+$roomNames = [
+    101 => ['audio commission room', 'audio commission', 'audio comission room'],
+    102 => ['college faculty room', 'collage faculty room', 'faculty room'],
+    103 => ['shs faculty room', 'shs faculity room', 'senior high school faculty room'],
+    104 => ['admission office', 'admissions office'],
+    105 => ['conference room'],
+    106 => ['finance room', 'finance office'],
+    107 => ['school director room', 'school director', 'director office', 'director room'],
+    108 => ['managing room', 'management room'],
+    109 => ['guidance office', 'guidance room'],
+    110 => ['classroom 110'],
+];
+if (preg_match('/\b(?:room|classroom)\s*#?\s*(\d{3})\b/i', $message, $roomMatch)) {
     $roomNumber = (int) $roomMatch[1];
-} elseif ($contextType === 'room' && preg_match('/\b([1-5]\d{2})\b/', $contextDestination, $roomMatch)) {
+} elseif ($contextType === 'room' && preg_match('/\b(\d{3})\b/', $contextDestination, $roomMatch)) {
     $roomNumber = (int) $roomMatch[1];
+} else {
+    $matchedAliasLength = 0;
+    foreach ($roomNames as $number => $aliases) {
+        foreach ($aliases as $alias) {
+            $normalizedAlias = $normalize($alias);
+            if (($contains($normalizedMessage, $normalizedAlias) || $contains($contextDestination, $normalizedAlias))
+                && strlen($normalizedAlias) > $matchedAliasLength) {
+                $roomNumber = $number;
+                $matchedAliasLength = strlen($normalizedAlias);
+            }
+        }
+    }
 }
 
 if ($roomNumber !== null) {
-    $floorNumber = (int) floor($roomNumber / 100);
-    $floorNames = [1 => '1st', 2 => '2nd', 3 => '3rd', 4 => '4th', 5 => '5th'];
-    $floorName = $floorNames[$floorNumber];
+    if (!isset($roomNames[$roomNumber])) {
+        echo json_encode([
+            'success' => true,
+            'reply' => "Room {$roomNumber} is unavailable in the campus 3D room guide for now. Only Floor 1 rooms (Rooms 101–110) are currently available.",
+            'source' => 'local'
+        ]);
+        exit;
+    }
+
+    $floorName = '1st';
     $currentLocation = trim((string) ($navContext['currentLocation'] ?? ''));
     $currentFloor = trim((string) ($navContext['floor'] ?? ''));
 
@@ -174,6 +205,9 @@ if (preg_match('/\b(event|events|reservation|reservations|today)\b/', $normalize
 $venueNames = array_column($venueRows, 'name');
 $localKnowledge = "ACLC College Tacloban - Fatima Campus locations:\n";
 foreach ($locations as $location) $localKnowledge .= "- {$location[0]}: {$location[1]}\n";
+$localKnowledge .= "Available rooms in the campus 3D room guide (Floor 1 only):\n";
+foreach ($roomNames as $number => $aliases) $localKnowledge .= "- Room {$number}: " . ucfirst($aliases[0]) . "\n";
+$localKnowledge .= "Other floors are unavailable for now.\n";
 $localKnowledge .= 'Database venues: ' . implode(', ', $venueNames) . "\n";
 $systemPrompt = "You are the ACLC Fatima Campus navigation assistant. Answer campus, room, facility, and direction questions using only this local campus information. If a detail is not listed, say so rather than inventing it. Give concise, practical directions. This assistant should answer known campus questions without relying on internet access.\n\n"
     . $localKnowledge . "\nCurrent location: " . ($navContext['currentLocation'] ?? 'Unknown')

@@ -52,16 +52,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (modelToggle && modelModal && modelClose) {
-        modelToggle.addEventListener('click', () => {
+        function openCampusNavigation() {
             modelToggle.setAttribute('aria-expanded', 'true');
             openModal(modelModal);
             window.dispatchEvent(new Event('campus:model-open'));
             enterNavMode();
             modelClose.focus();
-        });
+        }
+
+        modelToggle.addEventListener('click', openCampusNavigation);
         modelClose.addEventListener('click', closeModelModal);
         modelModal.addEventListener('click', event => {
             if (event.target === modelModal) closeModelModal();
+        });
+        document.querySelectorAll('[data-open-campus-assistant]').forEach(link => {
+            link.addEventListener('click', event => {
+                event.preventDefault();
+                openCampusNavigation();
+            });
         });
     }
 
@@ -166,7 +174,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // ══════════════════════════════════════
     // ── Navigation Mode ──
     // ══════════════════════════════════════
-    const navBtn      = document.getElementById('navBtn');
     const navPanel    = document.getElementById('navChatbotPanel');
     const navMessages = document.getElementById('navChatbotMessages');
     const navInput    = document.getElementById('navChatbotInput');
@@ -193,6 +200,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const floors    = ['1st Floor', '2nd Floor', '3rd Floor', '4th Floor', '5th Floor'];
     const destTypes = ['Teacher', 'Room', 'Venue / Place'];
+    const roomOptions = [
+        'Room 101 — Audio Commission Room',
+        'Room 102 — College Faculty Room',
+        'Room 103 — SHS Faculty Room',
+        'Room 104 — Admission Office',
+        'Room 105 — Conference Room',
+        'Room 106 — Finance Room',
+        'Room 107 — School Director Room',
+        'Room 108 — Managing Room',
+        'Room 109 — Guidance Office',
+        'Room 110 — Classroom 110'
+    ];
 
     // ── Nav helpers ──
     function navAppendMsg(text, sender) {
@@ -276,12 +295,6 @@ document.addEventListener('DOMContentLoaded', () => {
         navInput.disabled = true;
     }
 
-    navBtn.addEventListener('click', event => {
-        event.preventDefault();
-        navBtn.classList.add('is-loading');
-        navBtn.querySelector('i').className = 'fa-solid fa-spinner fa-spin';
-        window.PageTransition.navigate('navigation.php');
-    });
     document.addEventListener('keydown', e => {
         if (e.key !== 'Escape') return;
         if (modelModal.classList.contains('active')) closeModelModal();
@@ -341,16 +354,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const prompts = {
             'Teacher':       'Which teacher are you looking for? Type their name.',
-            'Room':          'Which room are you looking for? (e.g. Room 301, Computer Lab 1)',
+            'Room':          'Which room are you looking for? Choose a Floor 1 room from the suggestions. Other floors are unavailable for now.',
             'Venue / Place': 'Which venue or place? (e.g. Library, Admin Lounge, Cafeteria)'
         };
 
         await navBotSay(prompts[type], 800);
         navInput.disabled = false;
         navInput.focus();
+        if (type === 'Room') navShowReplies(roomOptions, handleDetails);
     }
 
     async function handleDetails(details) {
+        if (navState.destination === 'Room'
+            && (!window.CampusModelViewer || !window.CampusModelViewer.isRoomAvailable(details))) {
+            navState.step = 'details';
+            await navBotSay('That room is unavailable in the campus 3D guide for now. Please choose one of the available Floor 1 rooms.', 400);
+            navShowReplies(roomOptions, handleDetails);
+            navInput.disabled = false;
+            navInput.focus();
+            return;
+        }
+
         navState.step = 'directions';
         navInput.disabled = true;
 
@@ -377,41 +401,38 @@ document.addEventListener('DOMContentLoaded', () => {
             await navBotSay(hasRoomModel
                 ? `I'm loading the 3D model for ${details} in the campus preview.`
                 : `I couldn't find a 3D model file for ${details}, but I can still show you the route.`, 500);
-            navShowReplies(['Show route on campus map', 'Find another room'], async option => {
-                if (option === 'Show route on campus map') {
-                    openNavigationMap(context, details, reply);
+            navShowReplies(['Find another room', 'Back to campus model'], async option => {
+                if (option === 'Back to campus model') {
+                    navPanel.style.display = 'none';
+                    navTab.style.display = 'flex';
                     return;
                 }
-
                 navState = {
                     step: 'details',
                     currentLocation: context.currentLocation,
                     floor: context.floor,
                     destination: 'Room'
                 };
-                await navBotSay('Which room would you like to find? (e.g. Room 101)', 400);
+                await navBotSay('Which room would you like to find? Choose one of the available Floor 1 rooms.', 400);
                 navInput.disabled = false;
                 navInput.focus();
+                navShowReplies(roomOptions, handleDetails);
             });
             navInput.disabled = false;
             return;
         }
 
-        await new Promise(r => setTimeout(r, 800));
-        await navBotSay('Redirecting you to the navigation page for more details...', 700);
-        await new Promise(r => setTimeout(r, 1200));
-
-        openNavigationMap(context, details, reply);
-    }
-
-    function openNavigationMap(context, details, reply) {
-        sessionStorage.setItem('navContext', JSON.stringify({
-            ...context,
-            details,
-            directions: reply
-        }));
-
-        window.PageTransition.navigate('navigation.php');
+        navState.step = 'destination';
+        navShowReplies(['Find another destination', 'Back to campus model'], async option => {
+            if (option === 'Back to campus model') {
+                navPanel.style.display = 'none';
+                navTab.style.display = 'flex';
+                return;
+            }
+            navState = { step: 'location', currentLocation: null, floor: null, destination: null };
+            await startNavFlow();
+        });
+        navInput.disabled = false;
     }
 
     async function handleNavInput() {

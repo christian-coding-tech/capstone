@@ -58,7 +58,7 @@ $teacher_name = $_SESSION['user_name'];
             </div>
             <div class="dashboard-hero-actions">
                 <button class="dashboard-shortcut primary" type="button" onclick="document.getElementById('fabBtn').click()"><i class="fa-solid fa-plus"></i> New reservation</button>
-                <a class="dashboard-shortcut" href="navigation.php#campusEventsTitle"><i class="fa-solid fa-calendar-days"></i> Events calendar</a>
+                <a class="dashboard-shortcut" href="index.php#campusEventsTitle"><i class="fa-solid fa-calendar-days"></i> Events calendar</a>
                 <button class="dashboard-shortcut" type="button" id="teacherScanQr"><i class="fa-solid fa-camera"></i> Scan student QR</button>
             </div>
         </section>

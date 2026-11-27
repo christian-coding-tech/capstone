@@ -43,16 +43,16 @@
     const navigationStatus = document.getElementById('modelNavigationStatus');
     const models = {
         campus: { src: '3D/Aclc_Fatima_Campus.glb', label: 'ACLC Fatima Campus' },
-        room101: { src: '3D/Floor 1/Audio Comission Room 101.glb', label: 'Room 101' },
-        room102: { src: '3D/Floor 1/Collage Faculty Room 102.glb', label: 'Room 102' },
-        room103: { src: '3D/Floor 1/SHS Faculity Room 103.glb', label: 'Room 103' },
-        room104: { src: '3D/Floor 1/Admission Office 104.glb', label: 'Room 104' },
-        room105: { src: '3D/Floor 1/Conference Room 105.glb', label: 'Room 105' },
-        room106: { src: '3D/Floor 1/Finance Room 106.glb', label: 'Room 106' },
-        room107: { src: '3D/Floor 1/School Director Room 107.glb', label: 'Room 107' },
-        room108: { src: '3D/Floor 1/Managing Room 108.glb', label: 'Room 108' },
-        room109: { src: '3D/Floor 1/Guidance Office Room 109.glb', label: 'Room 109' },
-        room110: { src: '3D/Floor 1/Classroom 110.glb', label: 'Room 110' }
+        room101: { src: '3D/Floor 1/Audio Comission Room 101.glb', label: 'Room 101', aliases: ['Audio Commission Room', 'Audio Commission', 'Audio Comission Room'] },
+        room102: { src: '3D/Floor 1/Collage Faculty Room 102.glb', label: 'Room 102', aliases: ['College Faculty Room', 'Collage Faculty Room', 'Faculty Room'] },
+        room103: { src: '3D/Floor 1/SHS Faculity Room 103.glb', label: 'Room 103', aliases: ['SHS Faculty Room', 'SHS Faculity Room', 'Senior High School Faculty Room'] },
+        room104: { src: '3D/Floor 1/Admission Office 104.glb', label: 'Room 104', aliases: ['Admission Office', 'Admissions Office'] },
+        room105: { src: '3D/Floor 1/Conference Room 105.glb', label: 'Room 105', aliases: ['Conference Room'] },
+        room106: { src: '3D/Floor 1/Finance Room 106.glb', label: 'Room 106', aliases: ['Finance Room', 'Finance Office'] },
+        room107: { src: '3D/Floor 1/School Director Room 107.glb', label: 'Room 107', aliases: ['School Director Room', 'School Director', 'Director Office', 'Director Room'] },
+        room108: { src: '3D/Floor 1/Managing Room 108.glb', label: 'Room 108', aliases: ['Managing Room', 'Management Room'] },
+        room109: { src: '3D/Floor 1/Guidance Office Room 109.glb', label: 'Room 109', aliases: ['Guidance Office', 'Guidance Room'] },
+        room110: { src: '3D/Floor 1/Classroom 110.glb', label: 'Room 110', aliases: ['Classroom 110'] }
     };
 
     let model = null;
@@ -97,6 +97,32 @@
         targetCameraDistance = clamp(distance, minCameraDistance, maxCameraDistance);
         syncZoomSlider();
         render();
+    }
+
+    function normalizeRoomName(value) {
+        return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+    }
+
+    function findRoomModel(room) {
+        const query = normalizeRoomName(room);
+        const roomMatch = query.match(/\b(?:room|classroom)\s*#?\s*(\d{3})\b/)
+            || query.match(/\b(\d{3})\b/);
+        if (roomMatch) {
+            const modelKey = `room${Number(roomMatch[1])}`;
+            return models[modelKey] ? modelKey : null;
+        }
+
+        const modelKeys = Object.keys(models);
+        const exactMatch = modelKeys.find(key => {
+            const config = models[key];
+            return config.aliases && config.aliases.some(alias => query === normalizeRoomName(alias));
+        });
+        if (exactMatch) return exactMatch;
+
+        return modelKeys.find(key => {
+            const config = models[key];
+            return config.aliases && config.aliases.some(alias => query.includes(normalizeRoomName(alias)));
+        }) || null;
     }
 
     function disposeModel(object) {
@@ -184,15 +210,13 @@
     }
 
     window.CampusModelViewer = {
+        isRoomAvailable(room) {
+            return findRoomModel(room) !== null;
+        },
         showRoom(room) {
-            const roomMatch = String(room || '').match(/\b(?:room|classroom)\s*#?\s*(\d{3})\b/i)
-                || String(room || '').match(/\b(\d{3})\b/);
-            if (!roomMatch) return false;
-
-            const roomNumber = Number(roomMatch[1]);
-            const modelKey = `room${roomNumber}`;
-            if (!models[modelKey]) {
-                if (navigationStatus) navigationStatus.textContent = `No 3D model is available for Room ${roomNumber} yet.`;
+            const modelKey = findRoomModel(room);
+            if (!modelKey) {
+                if (navigationStatus) navigationStatus.textContent = `No 3D model is available for ${String(room || 'that room')} yet.`;
                 return false;
             }
 

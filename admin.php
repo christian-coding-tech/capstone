@@ -52,7 +52,7 @@ $admin_name = $_SESSION['user_name'];
                 <p>Review reservations, manage campus accounts, and keep the ACLC Fatima community running smoothly.</p>
             </div>
             <div class="dashboard-hero-actions">
-                <a class="dashboard-shortcut primary" href="navigation.php#campusEventsTitle"><i class="fa-solid fa-calendar-days"></i> Events calendar</a>
+                <a class="dashboard-shortcut primary" href="index.php#campusEventsTitle"><i class="fa-solid fa-calendar-days"></i> Events calendar</a>
                 <a class="dashboard-shortcut" href="index.php"><i class="fa-solid fa-house"></i> Landing page</a>
             </div>
         </section>

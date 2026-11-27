@@ -31,9 +31,8 @@ The system provides these main features:
 ## Project Structure
 
 ```text
-index.php              Landing page and 3D campus model
-navigation.php         Campus navigation page
-login.php              Login and navigation assistant entry point
+index.php              Landing page, campus navigation, events calendar, and 3D campus model
+login.php              Sign-in page with campus preview and navigation assistant
 student.php            Student dashboard
 teacher.php            Teacher dashboard
 admin.php              Administrator dashboard

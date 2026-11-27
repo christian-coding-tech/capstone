@@ -58,7 +58,7 @@ $student_name = $_SESSION['user_name'];
                 <button class="dashboard-shortcut" type="button" id="showStudentQr" aria-haspopup="dialog" aria-controls="studentQrModal">
                     <i class="fa-solid fa-qrcode" aria-hidden="true"></i> My QR code
                 </button>
-                <a class="dashboard-shortcut primary" href="navigation.php#campusEventsTitle"><i class="fa-solid fa-calendar-days"></i> Events calendar</a>
+                <a class="dashboard-shortcut primary" href="index.php#campusEventsTitle"><i class="fa-solid fa-calendar-days"></i> Events calendar</a>
                 <a class="dashboard-shortcut" href="index.php"><i class="fa-solid fa-house"></i> Landing page</a>
             </div>
         </section>
